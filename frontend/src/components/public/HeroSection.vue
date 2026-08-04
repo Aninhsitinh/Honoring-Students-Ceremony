@@ -1,36 +1,35 @@
 <template>
-  <section class="hero">
+  <section class="hero" :style="heroStyle">
     <div class="hero-overlay"></div>
     <div class="hero-content container">
       <div class="hero-badge animate-fade-in-down">
         <span class="badge badge-gold">{{ activeSemester?.name }} {{ activeSemester?.year }}</span>
       </div>
       <h1 class="hero-title animate-fade-in-up">
-        <span class="hero-title-line">Lễ Vinh Danh</span>
-        <span class="hero-title-accent gradient-text">Sinh Viên Xuất Sắc</span>
+        <span class="hero-title-line">{{ $t('hero.title_line') }}</span>
+        <span class="hero-title-accent gradient-text">{{ $t('hero.title_accent') }}</span>
       </h1>
       <p class="hero-description animate-fade-in-up delay-200">
-        Tôn vinh những sinh viên có thành tích học tập xuất sắc, đạt điểm cao nhất
-        từng môn và có đóng góp nổi bật trong các hoạt động của trường.
+        {{ $t('hero.description') }}
       </p>
       <div class="hero-stats animate-fade-in-up delay-400">
         <div class="stat-item">
           <span class="stat-number">{{ studentCount }}+</span>
-          <span class="stat-label">Sinh Viên</span>
+          <span class="stat-label">{{ $t('hero.students') }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-number">{{ semesterCount }}</span>
-          <span class="stat-label">Kỳ Học</span>
+          <span class="stat-label">{{ $t('hero.semesters') }}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-number">{{ subjectCount }}+</span>
-          <span class="stat-label">Môn Học</span>
+          <span class="stat-label">{{ $t('hero.subjects') }}</span>
         </div>
       </div>
       <div class="hero-scroll animate-fade-in delay-600">
-        <span>Khám phá thêm</span>
+        <span>{{ $t('hero.explore') }}</span>
         <div class="scroll-indicator">
           <div class="scroll-dot"></div>
         </div>
@@ -43,6 +42,14 @@
 import { computed } from 'vue'
 import { useSemesterStore } from '../../stores/semester'
 import { useStudentStore } from '../../stores/student'
+import api from '../../api/axios'
+
+const getImageUrl = (url) => {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  const baseUrl = api.defaults.baseURL.replace(/\/api\/?$/, '')
+  return `${baseUrl}${url}`
+}
 
 const semesterStore = useSemesterStore()
 const studentStore = useStudentStore()
@@ -51,6 +58,17 @@ const activeSemester = computed(() => semesterStore.selectedSemester)
 const studentCount = computed(() => studentStore.total || 0)
 const semesterCount = computed(() => semesterStore.semesters.length)
 const subjectCount = computed(() => 8)
+
+const heroStyle = computed(() => {
+  if (activeSemester.value?.bg_image) {
+    return {
+      backgroundImage: `url('${getImageUrl(activeSemester.value.bg_image)}')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }
+  }
+  return {}
+})
 </script>
 
 <style scoped>

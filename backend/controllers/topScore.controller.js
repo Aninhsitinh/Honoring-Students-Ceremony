@@ -8,7 +8,7 @@ const topScoreController = {
       res.json(topScores);
     } catch (error) {
       console.error('Get top scores error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -19,7 +19,7 @@ const topScoreController = {
       res.json(subjects);
     } catch (error) {
       console.error('Get subjects error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -27,12 +27,12 @@ const topScoreController = {
     try {
       const topScore = await TopScore.findById(req.params.id);
       if (!topScore) {
-        return res.status(404).json({ message: 'Không tìm thấy' });
+        return res.status(404).json({ message: 'error.not_found' });
       }
       res.json(topScore);
     } catch (error) {
       console.error('Get top score error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -43,7 +43,7 @@ const topScoreController = {
       res.status(201).json(topScore);
     } catch (error) {
       console.error('Create top score error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -52,12 +52,12 @@ const topScoreController = {
       const { student_id, subject_name, score, semester_id } = req.body;
       const topScore = await TopScore.update(req.params.id, { student_id, subject_name, score, semester_id });
       if (!topScore) {
-        return res.status(404).json({ message: 'Không tìm thấy' });
+        return res.status(404).json({ message: 'error.not_found' });
       }
       res.json(topScore);
     } catch (error) {
       console.error('Update top score error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -65,12 +65,12 @@ const topScoreController = {
     try {
       const topScore = await TopScore.delete(req.params.id);
       if (!topScore) {
-        return res.status(404).json({ message: 'Không tìm thấy' });
+        return res.status(404).json({ message: 'error.not_found' });
       }
-      res.json({ message: 'Đã xóa', topScore });
+      res.json({ message: 'topscore.deleted', topScore });
     } catch (error) {
       console.error('Delete top score error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 };

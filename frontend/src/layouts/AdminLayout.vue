@@ -10,8 +10,11 @@
           <h2 class="page-title">{{ currentTitle }}</h2>
         </div>
         <div class="admin-header-right">
+          <button class="lang-btn" @click="toggleLanguage">
+            {{ currentLang === 'vi' ? 'EN' : 'VI' }}
+          </button>
           <span class="admin-user">👤 {{ user?.username }}</span>
-          <button class="btn btn-secondary btn-sm" @click="handleLogout">Đăng xuất</button>
+          <button class="btn btn-secondary btn-sm" @click="handleLogout">{{ $t('nav.logout') }}</button>
         </div>
       </header>
       <div class="admin-content">
@@ -28,15 +31,23 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import AdminSidebar from '../components/admin/AdminSidebar.vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const { t: $t, locale } = useI18n()
 
 const user = computed(() => authStore.user)
-const currentTitle = computed(() => route.meta.title || 'Dashboard')
+const currentTitle = computed(() => route.meta.title ? $t(route.meta.title) : $t('admin.dashboard'))
+const currentLang = computed(() => locale.value)
+
+function toggleLanguage() {
+  locale.value = locale.value === 'vi' ? 'en' : 'vi'
+  localStorage.setItem('lang', locale.value)
+}
 
 function toggleSidebar() {
   document.querySelector('.admin-sidebar')?.classList.toggle('open')
@@ -85,6 +96,28 @@ function handleLogout() {
   display: flex;
   align-items: center;
   gap: var(--space-4);
+}
+
+.lang-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-text-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.lang-btn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
 }
 
 .page-title {

@@ -3,23 +3,23 @@
     <div class="page-top">
       <div class="page-top-left">
         <select v-model="filterSemester" class="form-select" style="max-width: 200px;">
-          <option value="">Tất cả kỳ học</option>
+          <option value="">{{ $t('admin.all_semesters') }}</option>
           <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ sem.name }} {{ sem.year }}</option>
         </select>
       </div>
-      <button class="btn btn-primary" @click="openForm()">+ Thêm Sinh Viên</button>
+      <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_student') }}</button>
     </div>
 
     <div class="data-table-wrap glass">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Sinh Viên</th>
-            <th>MSSV</th>
-            <th>Khoa</th>
-            <th>Loại</th>
-            <th>Kỳ Học</th>
-            <th>Thao Tác</th>
+            <th>{{ $t('hero.students') }}</th>
+            <th>{{ $t('student.id') }}</th>
+            <th>{{ $t('student.department') }}</th>
+            <th>{{ $t('admin.student_type') }}</th>
+            <th>{{ $t('student.semester') }}</th>
+            <th>{{ $t('admin.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -34,14 +34,14 @@
             <td>{{ s.department }}</td>
             <td>
               <span class="badge" :class="s.achievement_type === 'excellent' ? 'badge-gold' : 'badge-blue'">
-                {{ s.achievement_type === 'excellent' ? 'Xuất Sắc' : 'Điểm Cao' }}
+                {{ s.achievement_type === 'excellent' ? $t('admin.type_excellent') : $t('admin.type_topscore') }}
               </span>
             </td>
             <td>{{ s.semester_name }} {{ s.semester_year }}</td>
             <td>
               <div class="actions">
-                <button class="btn btn-secondary btn-sm" @click="openForm(s)">Sửa</button>
-                <button class="btn btn-danger btn-sm" @click="deleteStudent(s.id)">Xóa</button>
+                <button class="btn btn-secondary btn-sm" @click="openForm(s)">{{ $t('admin.edit') }}</button>
+                <button class="btn btn-danger btn-sm" @click="deleteStudent(s.id)">{{ $t('admin.delete') }}</button>
               </div>
             </td>
           </tr>
@@ -54,61 +54,80 @@
       <div v-if="showForm" class="modal-backdrop" @click.self="showForm = false">
         <div class="modal-content glass-strong animate-scale-in" style="max-width: 600px;">
           <button class="modal-close" @click="showForm = false">✕</button>
-          <h3 class="modal-title gradient-text">{{ editingId ? 'Sửa Sinh Viên' : 'Thêm Sinh Viên' }}</h3>
+          <h3 class="modal-title gradient-text">{{ editingId ? $t('admin.edit_student') : $t('admin.add_student') }}</h3>
 
           <form @submit.prevent="saveStudent">
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Họ tên *</label>
+                <label class="form-label">{{ $t('admin.full_name') }}</label>
                 <input v-model="form.full_name" class="form-input" required />
               </div>
               <div class="form-group">
-                <label class="form-label">MSSV</label>
+                <label class="form-label">{{ $t('student.id') }}</label>
                 <input v-model="form.student_code" class="form-input" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Khoa / Ngành</label>
-                <input v-model="form.department" class="form-input" />
+                <label class="form-label">{{ $t('student.department') }}</label>
+                <select v-model="form.department" class="form-select" required>
+                  <option value="" disabled>{{ $t('admin.select_department') }}</option>
+                  <optgroup :label="$t('admin.tech_dept')">
+                    <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+                    <option value="Trí tuệ nhân tạo và Khoa học dữ liệu">Trí tuệ nhân tạo và Khoa học dữ liệu</option>
+                    <option value="Trí tuệ nhân tạo và An ninh mạng">Trí tuệ nhân tạo và An ninh mạng</option>
+                  </optgroup>
+                  <optgroup :label="$t('admin.biz_dept')">
+                    <option value="Quản trị Kinh doanh">Quản trị Kinh doanh</option>
+                    <option value="Quản trị Marketing">Quản trị Marketing</option>
+                    <option value="Quản trị Sự kiện">Quản trị Sự kiện</option>
+                    <option value="Quản trị Truyền thông">Quản trị Truyền thông</option>
+                    <option value="Kinh doanh quốc tế">Kinh doanh quốc tế</option>
+                    <option value="Logistics và Quản trị Chuỗi cung ứng">Logistics và Quản trị Chuỗi cung ứng</option>
+                  </optgroup>
+                  <optgroup :label="$t('admin.design_dept')">
+                    <option value="Thiết kế đồ họa & kỹ thuật số">Thiết kế đồ họa & kỹ thuật số</option>
+                    <option value="Truyền thông đa phương tiện">Truyền thông đa phương tiện</option>
+                  </optgroup>
+                </select>
               </div>
               <div class="form-group">
-                <label class="form-label">Loại thành tích</label>
+                <label class="form-label">{{ $t('admin.student_type') }}</label>
                 <select v-model="form.achievement_type" class="form-select">
-                  <option value="excellent">Xuất Sắc</option>
-                  <option value="top_score">Điểm Cao</option>
+                  <option value="excellent">{{ $t('admin.type_excellent') }}</option>
+                  <option value="top_score">{{ $t('admin.type_topscore') }}</option>
                 </select>
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Kỳ học *</label>
+                <label class="form-label">{{ $t('student.semester') }} *</label>
                 <select v-model="form.semester_id" class="form-select" required>
                   <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ sem.name }} {{ sem.year }}</option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label">Thứ tự sắp xếp</label>
+                <label class="form-label">{{ $t('admin.sort_order') }}</label>
                 <input v-model.number="form.sort_order" type="number" class="form-input" />
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Ảnh đại diện</label>
+              <label class="form-label">{{ $t('admin.avatar') }}</label>
               <input type="file" @change="handleFile" accept="image/*" class="form-input" />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Mô tả thành tích</label>
+              <label class="form-label">{{ $t('admin.desc_achievement') }}</label>
               <textarea v-model="form.description" class="form-textarea" rows="4"></textarea>
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="showForm = false">Hủy</button>
+              <button type="button" class="btn btn-secondary" @click="showForm = false">{{ $t('admin.cancel') }}</button>
               <button type="submit" class="btn btn-primary" :disabled="saving">
-                {{ saving ? 'Đang lưu...' : 'Lưu' }}
+                {{ saving ? $t('admin.saving') : $t('admin.save') }}
               </button>
             </div>
           </form>
@@ -120,8 +139,10 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '../../api/axios'
 
+const { t } = useI18n()
 const students = ref([])
 const semesters = ref([])
 const filterSemester = ref('')
@@ -134,6 +155,41 @@ const form = ref({
   full_name: '', student_code: '', department: '', description: '',
   achievement_type: 'excellent', semester_id: '', sort_order: 0,
 })
+
+const DEPARTMENTS = {
+  GCS: [
+    'Công nghệ thông tin',
+    'Trí tuệ nhân tạo và Khoa học dữ liệu',
+    'Trí tuệ nhân tạo và An ninh mạng'
+  ],
+  GBS: [
+    'Quản trị Kinh doanh',
+    'Quản trị Marketing',
+    'Quản trị Sự kiện',
+    'Quản trị Truyền thông',
+    'Kinh doanh quốc tế',
+    'Logistics và Quản trị Chuỗi cung ứng'
+  ],
+  GDS: [
+    'Thiết kế đồ họa & kỹ thuật số',
+    'Truyền thông đa phương tiện'
+  ]
+}
+
+function validateStudentCode(code, department) {
+  if (!code || !department) return false
+  let expectedPrefix = null
+  for (const [prefix, majors] of Object.entries(DEPARTMENTS)) {
+    if (majors.includes(department)) {
+      expectedPrefix = prefix
+      break
+    }
+  }
+  if (!expectedPrefix) return false
+
+  const regex = new RegExp(`^${expectedPrefix}\\d{6}$`)
+  return regex.test(code)
+}
 
 async function loadStudents() {
   const params = {}
@@ -167,6 +223,11 @@ function handleFile(e) {
 }
 
 async function saveStudent() {
+  if (!validateStudentCode(form.value.student_code, form.value.department)) {
+    alert(t('error.student.invalid_code'))
+    return
+  }
+
   saving.value = true
   try {
     const fd = new FormData()
@@ -183,19 +244,19 @@ async function saveStudent() {
     showForm.value = false
     loadStudents()
   } catch (err) {
-    alert(err.response?.data?.message || 'Lỗi khi lưu')
+    alert(err.response?.data?.message || t('admin.error_save'))
   } finally {
     saving.value = false
   }
 }
 
 async function deleteStudent(id) {
-  if (!confirm('Bạn có chắc muốn xóa sinh viên này?')) return
+  if (!confirm(t('admin.confirm_delete'))) return
   try {
     await api.delete(`/students/${id}`)
     loadStudents()
   } catch (err) {
-    alert('Lỗi khi xóa')
+    alert(t('admin.error_delete'))
   }
 }
 

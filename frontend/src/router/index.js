@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { i18n } from '../i18n'
 
 const routes = [
   // Public routes
@@ -10,19 +11,19 @@ const routes = [
         path: '',
         name: 'Home',
         component: () => import('../views/public/HomePage.vue'),
-        meta: { title: 'Vinh Danh Sinh Viên Xuất Sắc' },
+        meta: { title: 'nav.home' },
       },
       {
         path: 'tin-tuc',
         name: 'Posts',
         component: () => import('../views/public/PostListPage.vue'),
-        meta: { title: 'Tin Tức & Sự Kiện' },
+        meta: { title: 'post.news_events' },
       },
       {
         path: 'tin-tuc/:slug',
         name: 'PostDetail',
         component: () => import('../views/public/PostDetailPage.vue'),
-        meta: { title: 'Chi Tiết Bài Viết' },
+        meta: { title: 'post.detail' },
       },
     ],
   },
@@ -32,7 +33,7 @@ const routes = [
     path: '/admin/login',
     name: 'AdminLogin',
     component: () => import('../views/admin/LoginPage.vue'),
-    meta: { title: 'Đăng Nhập Quản Trị' },
+    meta: { title: 'admin.login' },
   },
   {
     path: '/admin',
@@ -43,31 +44,31 @@ const routes = [
         path: '',
         name: 'Dashboard',
         component: () => import('../views/admin/DashboardPage.vue'),
-        meta: { title: 'Dashboard' },
+        meta: { title: 'admin.dashboard' },
       },
       {
         path: 'students',
         name: 'ManageStudents',
         component: () => import('../views/admin/ManageStudents.vue'),
-        meta: { title: 'Quản Lý Sinh Viên' },
+        meta: { title: 'admin.manage_students' },
       },
       {
         path: 'top-scores',
         name: 'ManageTopScores',
         component: () => import('../views/admin/ManageTopScores.vue'),
-        meta: { title: 'Quản Lý Điểm Cao' },
+        meta: { title: 'admin.manage_scores' },
       },
       {
         path: 'posts',
         name: 'ManagePosts',
         component: () => import('../views/admin/ManagePosts.vue'),
-        meta: { title: 'Quản Lý Bài Viết' },
+        meta: { title: 'admin.manage_posts' },
       },
       {
         path: 'semesters',
         name: 'ManageSemesters',
         component: () => import('../views/admin/ManageSemesters.vue'),
-        meta: { title: 'Quản Lý Kỳ Học' },
+        meta: { title: 'admin.manage_semesters' },
       },
     ],
   },
@@ -84,9 +85,8 @@ const router = createRouter({
 
 // Navigation guard for auth
 router.beforeEach((to, from, next) => {
-  // Update document title
   document.title = to.meta.title
-    ? `${to.meta.title} | Honoring Students`
+    ? `${i18n.global.t(to.meta.title)} | Honoring Students`
     : 'Honoring Students'
 
   // Check auth for admin routes

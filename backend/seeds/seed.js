@@ -6,6 +6,10 @@ const seed = async () => {
   try {
     console.log('🌱 Seeding database...');
 
+    // Clear existing data for students and top_scores to prevent duplicates during re-seeding
+    await db.query('TRUNCATE TABLE top_scores, students RESTART IDENTITY CASCADE');
+    console.log('🧹 Cleared existing students and top scores');
+
     // Create default admin user
     const passwordHash = await bcrypt.hash('admin123', 10);
     await db.query(
@@ -43,16 +47,16 @@ const seed = async () => {
 
     // Create sample students
     const students = [
-      { full_name: 'Nguyễn Văn An', student_code: 'SE170001', department: 'Kỹ thuật Phần mềm', description: 'Sinh viên xuất sắc nhất kỳ với GPA 3.95/4.0. Tích cực tham gia các hoạt động nghiên cứu khoa học và đạt giải nhất cuộc thi lập trình.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
-      { full_name: 'Trần Thị Bình', student_code: 'SE170002', department: 'Kỹ thuật Phần mềm', description: 'GPA 3.90/4.0 - Đạt học bổng toàn phần. Dẫn dắt đội thi ACM-ICPC và đạt giải khu vực.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
-      { full_name: 'Lê Hoàng Cường', student_code: 'AI170003', department: 'Trí tuệ Nhân tạo', description: 'Nghiên cứu xuất sắc về Deep Learning. Công bố 2 bài báo khoa học tại hội nghị quốc tế.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
-      { full_name: 'Phạm Thị Dung', student_code: 'IA170004', department: 'An toàn Thông tin', description: 'Top 1 về an ninh mạng. Đạt giải nhì cuộc thi CTF toàn quốc và chứng chỉ CompTIA Security+.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
-      { full_name: 'Hoàng Minh Đức', student_code: 'SE170005', department: 'Kỹ thuật Phần mềm', description: 'GPA 3.88/4.0 - Founder của startup EdTech được đầu tư. Đại diện trường tham gia Google Summer of Code.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
-      { full_name: 'Võ Thị Em', student_code: 'GD170006', department: 'Thiết kế Đồ họa', description: 'Đạt giải nhất cuộc thi thiết kế UX/UI toàn quốc. Portfolio ấn tượng với 50+ dự án thực tế.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
-      { full_name: 'Đặng Quốc Phong', student_code: 'SE170007', department: 'Kỹ thuật Phần mềm', description: 'Điểm 10 tuyệt đối môn Cấu trúc Dữ liệu & Giải thuật. Mentor cho hơn 30 sinh viên khóa dưới.', achievement_type: 'top_score', semester_slug: 'ky-thu-2025' },
-      { full_name: 'Ngô Thị Giang', student_code: 'AI170008', department: 'Trí tuệ Nhân tạo', description: 'Điểm cao nhất lớp môn Machine Learning (9.8/10). Intern tại Google DeepMind.', achievement_type: 'top_score', semester_slug: 'ky-thu-2025' },
-      { full_name: 'Bùi Văn Hải', student_code: 'SE170009', department: 'Kỹ thuật Phần mềm', description: 'GPA 3.92/4.0 - Chủ tịch CLB lập trình. Giải nhất Hackathon toàn quốc.', achievement_type: 'excellent', semester_slug: 'ky-he-2025' },
-      { full_name: 'Mai Thị Hương', student_code: 'BA170010', department: 'Quản trị Kinh doanh', description: 'Sinh viên 5 tốt cấp Trung ương. Đạt IELTS 8.0 và giải thưởng nghiên cứu sinh giỏi.', achievement_type: 'excellent', semester_slug: 'ky-xuan-2025' },
+      { full_name: 'Nguyễn Văn An', student_code: 'GCS230001', department: 'Công nghệ thông tin', description: 'Sinh viên xuất sắc nhất kỳ với GPA 3.95/4.0. Tích cực tham gia các hoạt động nghiên cứu khoa học và đạt giải nhất cuộc thi lập trình.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
+      { full_name: 'Trần Thị Bình', student_code: 'GCS230002', department: 'Công nghệ thông tin', description: 'GPA 3.90/4.0 - Đạt học bổng toàn phần. Dẫn dắt đội thi ACM-ICPC và đạt giải khu vực.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
+      { full_name: 'Lê Hoàng Cường', student_code: 'GCS230003', department: 'Trí tuệ nhân tạo và Khoa học dữ liệu', description: 'Nghiên cứu xuất sắc về Deep Learning. Công bố 2 bài báo khoa học tại hội nghị quốc tế.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
+      { full_name: 'Phạm Thị Dung', student_code: 'GCS230004', department: 'Trí tuệ nhân tạo và An ninh mạng', description: 'Top 1 về an ninh mạng. Đạt giải nhì cuộc thi CTF toàn quốc và chứng chỉ CompTIA Security+.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
+      { full_name: 'Hoàng Minh Đức', student_code: 'GCS230005', department: 'Công nghệ thông tin', description: 'GPA 3.88/4.0 - Founder của startup EdTech được đầu tư. Đại diện trường tham gia Google Summer of Code.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
+      { full_name: 'Võ Thị Em', student_code: 'GDS230006', department: 'Thiết kế đồ họa & kỹ thuật số', description: 'Đạt giải nhất cuộc thi thiết kế UX/UI toàn quốc. Portfolio ấn tượng với 50+ dự án thực tế.', achievement_type: 'excellent', semester_slug: 'ky-thu-2025' },
+      { full_name: 'Đặng Quốc Phong', student_code: 'GCS230007', department: 'Công nghệ thông tin', description: 'Điểm 10 tuyệt đối môn Cấu trúc Dữ liệu & Giải thuật. Mentor cho hơn 30 sinh viên khóa dưới.', achievement_type: 'top_score', semester_slug: 'ky-thu-2025' },
+      { full_name: 'Ngô Thị Giang', student_code: 'GCS230008', department: 'Trí tuệ nhân tạo và Khoa học dữ liệu', description: 'Điểm cao nhất lớp môn Machine Learning (9.8/10). Intern tại Google DeepMind.', achievement_type: 'top_score', semester_slug: 'ky-thu-2025' },
+      { full_name: 'Bùi Văn Hải', student_code: 'GCS230009', department: 'Công nghệ thông tin', description: 'GPA 3.92/4.0 - Chủ tịch CLB lập trình. Giải nhất Hackathon toàn quốc.', achievement_type: 'excellent', semester_slug: 'ky-he-2025' },
+      { full_name: 'Mai Thị Hương', student_code: 'GBS230010', department: 'Quản trị Kinh doanh', description: 'Sinh viên 5 tốt cấp Trung ương. Đạt IELTS 8.0 và giải thưởng nghiên cứu sinh giỏi.', achievement_type: 'excellent', semester_slug: 'ky-xuan-2025' },
     ];
 
     for (let i = 0; i < students.length; i++) {
@@ -75,14 +79,14 @@ const seed = async () => {
 
     // Create sample top scores
     const topScores = [
-      { student_code: 'SE170007', subject_name: 'Cấu trúc Dữ liệu & Giải thuật', score: 10.0, semester_slug: 'ky-thu-2025' },
-      { student_code: 'AI170008', subject_name: 'Machine Learning', score: 9.8, semester_slug: 'ky-thu-2025' },
-      { student_code: 'SE170001', subject_name: 'Lập trình Web', score: 9.7, semester_slug: 'ky-thu-2025' },
-      { student_code: 'SE170002', subject_name: 'Cơ sở Dữ liệu', score: 9.9, semester_slug: 'ky-thu-2025' },
-      { student_code: 'AI170003', subject_name: 'Deep Learning', score: 9.6, semester_slug: 'ky-thu-2025' },
-      { student_code: 'IA170004', subject_name: 'An ninh Mạng', score: 9.8, semester_slug: 'ky-thu-2025' },
-      { student_code: 'SE170005', subject_name: 'Kiến trúc Phần mềm', score: 9.5, semester_slug: 'ky-thu-2025' },
-      { student_code: 'GD170006', subject_name: 'Thiết kế UX/UI', score: 9.9, semester_slug: 'ky-thu-2025' },
+      { student_code: 'GCS230007', subject_name: 'COMP1858 Data Structures and Algorithms', score: 10.0, semester_slug: 'ky-thu-2025' },
+      { student_code: 'GCS230008', subject_name: 'COMP1861 Machine Learning', score: 9.8, semester_slug: 'ky-thu-2025' },
+      { student_code: 'GCS230001', subject_name: 'COMP1841 Web Programming 1', score: 9.7, semester_slug: 'ky-thu-2025' },
+      { student_code: 'GCS230002', subject_name: 'COMP1856 Software Engineering', score: 9.9, semester_slug: 'ky-thu-2025' },
+      { student_code: 'GCS230003', subject_name: 'DPLG101 Deep Learning', score: 9.6, semester_slug: 'ky-thu-2025' },
+      { student_code: 'GCS230004', subject_name: 'COMP1806 Information Security', score: 9.8, semester_slug: 'ky-thu-2025' },
+      { student_code: 'GCS230005', subject_name: 'COMP1589 Computer Systems and Internet Technologies', score: 9.5, semester_slug: 'ky-thu-2025' },
+      { student_code: 'GDS230006', subject_name: 'Thiết kế UX/UI', score: 9.9, semester_slug: 'ky-thu-2025' },
     ];
 
     for (const ts of topScores) {

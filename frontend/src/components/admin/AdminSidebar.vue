@@ -10,30 +10,30 @@
     <nav class="sidebar-nav">
       <router-link to="/admin" class="nav-item" exact-active-class="active" @click="close">
         <span class="nav-icon">📊</span>
-        <span>Dashboard</span>
+        <span>{{ $t('admin.dashboard') }}</span>
       </router-link>
       <router-link to="/admin/students" class="nav-item" active-class="active" @click="close">
         <span class="nav-icon">👨‍🎓</span>
-        <span>Sinh Viên</span>
+        <span>{{ $t('admin.manage_students') }}</span>
       </router-link>
       <router-link to="/admin/top-scores" class="nav-item" active-class="active" @click="close">
         <span class="nav-icon">⭐</span>
-        <span>Điểm Cao</span>
+        <span>{{ $t('admin.manage_scores') }}</span>
       </router-link>
       <router-link to="/admin/posts" class="nav-item" active-class="active" @click="close">
         <span class="nav-icon">📝</span>
-        <span>Bài Viết</span>
+        <span>{{ $t('admin.manage_posts') }}</span>
       </router-link>
       <router-link to="/admin/semesters" class="nav-item" active-class="active" @click="close">
         <span class="nav-icon">📅</span>
-        <span>Kỳ Học</span>
+        <span>{{ $t('admin.manage_semesters') }}</span>
       </router-link>
     </nav>
 
     <div class="sidebar-footer">
       <router-link to="/" class="nav-item" target="_blank">
         <span class="nav-icon">🌐</span>
-        <span>Xem Trang Chủ</span>
+        <span>{{ $t('nav.home') }}</span>
       </router-link>
     </div>
   </aside>

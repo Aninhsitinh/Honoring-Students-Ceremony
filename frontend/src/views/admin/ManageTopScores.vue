@@ -2,22 +2,22 @@
   <div class="manage-page">
     <div class="page-top">
       <select v-model="filterSemester" class="form-select" style="max-width: 200px;">
-        <option value="">Tất cả kỳ học</option>
+        <option value="">{{ $t('admin.all_semesters') }}</option>
         <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ sem.name }} {{ sem.year }}</option>
       </select>
-      <button class="btn btn-primary" @click="openForm()">+ Thêm Điểm Cao</button>
+      <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_topscore') }}</button>
     </div>
 
     <div class="data-table-wrap glass">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Sinh Viên</th>
-            <th>MSSV</th>
-            <th>Môn Học</th>
-            <th>Điểm</th>
-            <th>Kỳ Học</th>
-            <th>Thao Tác</th>
+            <th>{{ $t('hero.students') }}</th>
+            <th>{{ $t('student.id') }}</th>
+            <th>{{ $t('home.subject') }}</th>
+            <th>{{ $t('home.score') }}</th>
+            <th>{{ $t('student.semester') }}</th>
+            <th>{{ $t('admin.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -29,8 +29,8 @@
             <td>{{ ts.semester_name }} {{ ts.semester_year }}</td>
             <td>
               <div class="actions">
-                <button class="btn btn-secondary btn-sm" @click="openForm(ts)">Sửa</button>
-                <button class="btn btn-danger btn-sm" @click="deleteScore(ts.id)">Xóa</button>
+                <button class="btn btn-secondary btn-sm" @click="openForm(ts)">{{ $t('admin.edit') }}</button>
+                <button class="btn btn-danger btn-sm" @click="deleteScore(ts.id)">{{ $t('admin.delete') }}</button>
               </div>
             </td>
           </tr>
@@ -43,36 +43,48 @@
       <div v-if="showForm" class="modal-backdrop" @click.self="showForm = false">
         <div class="modal-content glass-strong animate-scale-in" style="max-width: 500px;">
           <button class="modal-close" @click="showForm = false">✕</button>
-          <h3 class="modal-title gradient-text">{{ editingId ? 'Sửa Điểm Cao' : 'Thêm Điểm Cao' }}</h3>
+          <h3 class="modal-title gradient-text">{{ editingId ? $t('admin.edit_topscore') : $t('admin.add_topscore') }}</h3>
 
           <form @submit.prevent="saveScore">
             <div class="form-group">
-              <label class="form-label">Sinh viên *</label>
+              <label class="form-label">{{ $t('hero.students') }} *</label>
               <select v-model="form.student_id" class="form-select" required>
                 <option v-for="s in allStudents" :key="s.id" :value="s.id">{{ s.full_name }} ({{ s.student_code }})</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Môn học *</label>
-              <input v-model="form.subject_name" class="form-input" required placeholder="VD: Machine Learning" />
+              <label class="form-label">{{ $t('home.subject') }} *</label>
+              <select v-if="isITStudent" v-model="form.subject_name" class="form-select" required>
+                <option value="" disabled>{{ $t('admin.select_subject') }}</option>
+                <option v-for="sub in IT_SUBJECTS" :key="sub" :value="sub">{{ sub }}</option>
+              </select>
+              <select v-else-if="isAIDSStudent" v-model="form.subject_name" class="form-select" required>
+                <option value="" disabled>{{ $t('admin.select_subject') }}</option>
+                <option v-for="sub in AI_DS_SUBJECTS" :key="sub" :value="sub">{{ sub }}</option>
+              </select>
+              <select v-else-if="isAICyberStudent" v-model="form.subject_name" class="form-select" required>
+                <option value="" disabled>{{ $t('admin.select_subject') }}</option>
+                <option v-for="sub in AI_CYBER_SUBJECTS" :key="sub" :value="sub">{{ sub }}</option>
+              </select>
+              <input v-else v-model="form.subject_name" class="form-input" required :placeholder="$t('admin.type_subject')" />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Điểm *</label>
+              <label class="form-label">{{ $t('home.score') }} *</label>
               <input v-model.number="form.score" type="number" step="0.01" min="0" max="10" class="form-input" required />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Kỳ học *</label>
+              <label class="form-label">{{ $t('student.semester') }} *</label>
               <select v-model="form.semester_id" class="form-select" required>
                 <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ sem.name }} {{ sem.year }}</option>
               </select>
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="showForm = false">Hủy</button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? 'Đang lưu...' : 'Lưu' }}</button>
+              <button type="button" class="btn btn-secondary" @click="showForm = false">{{ $t('admin.cancel') }}</button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? $t('admin.saving') : $t('admin.save') }}</button>
             </div>
           </form>
         </div>
@@ -82,9 +94,11 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import api from '../../api/axios'
+import { useI18n } from 'vue-i18n'
 
+const { t: $t } = useI18n()
 const topScores = ref([])
 const semesters = ref([])
 const allStudents = ref([])
@@ -94,6 +108,114 @@ const editingId = ref(null)
 const saving = ref(false)
 
 const form = ref({ student_id: '', subject_name: '', score: '', semester_id: '' })
+
+const DEPARTMENTS = {
+  GCS: [
+    'Công nghệ thông tin',
+    'Trí tuệ nhân tạo và Khoa học dữ liệu',
+    'Trí tuệ nhân tạo và An ninh mạng'
+  ]
+}
+
+const IT_SUBJECTS = [
+  'COMP1753 Programming Foundations',
+  'COMP1856 Software Engineering',
+  'COMP1845 Systems Development',
+  'MATH1179 Mathematics for Computer Science',
+  'COMP1857 Introduction to Data Science',
+  'COMP1752 Object Oriented Programming',
+  'COMP1843 Principles of Security',
+  'COMP1589 Computer Systems and Internet Technologies',
+  'COMP1773 User Interface Design',
+  'COMP1841 Web Programming 1',
+  'COMP1770 Professional Project Management',
+  'AIGW201 Introduction to Artificial Intelligence',
+  'COMP1551 Application Development',
+  'COMP1810 Data and Web Analytics',
+  'COMP1807 Agile Development with SCRUM',
+  'COMP1842 Web Programming 2',
+  'COMP1844 Information Analysis and Visualisation',
+  'AMD201 Advanced Microservices Development and Deployment',
+  'COMP1858 Data Structures and Algorithms',
+  'COMP1643 Information and Content Management',
+  'COMP1649 Human Computer Interaction and Design',
+  'COMP1787 Requirements Management',
+  'COMP1786 Mobile Application Design and Development',
+  'COMP1682 Final Year Projects',
+  'OJT On the Job Training'
+]
+
+const AI_DS_SUBJECTS = [
+  'COMP1753 Programming Foundations',
+  'COMP1856 Software Engineering',
+  'COMP1845 Systems Development',
+  'MATH1179 Mathematics for Computer Science',
+  'COMP1857 Introduction to Data Science',
+  'COMP1752 Object Oriented Programming',
+  'COMP1843 Principles of Security',
+  'COMP1589 Computer Systems and Internet Technologies',
+  'MACG101 Advanced math for Computer Science',
+  'COMP1773 User Interface Design',
+  'COMP1841 Web Programming 1',
+  'COMP1770 Professional Project Management',
+  'AIGW201 Introduction to Artificial Intelligence',
+  'COMP1551 Application Development',
+  'COMP1807 Agile Development with SCRUM',
+  'COMP1891 Applications in AI and Data Science',
+  'COMP1842 Web Programming 2',
+  'COMP1858 Data Structures and Algorithms',
+  'FCVG101 Fundamentals of Computer Vision',
+  'COMP1682 Final Year Projects',
+  'COMP1861 Machine Learning',
+  'COMP1921 Advanced Topics in Data Science and AI',
+  'DPLG101 Deep Learning',
+  'COMP1787 Requirements Management',
+  'COMP1649 Human Computer Interaction and Design',
+  'OJT On the Job Training'
+]
+
+const AI_CYBER_SUBJECTS = [
+  'COMP1753 Programming Foundations',
+  'COMP1856 Software Engineering',
+  'COMP1845 Systems Development',
+  'MATH1179 Mathematics for Computer Science',
+  'COMP1857 Introduction to Data Science',
+  'COMP1752 Object Oriented Programming',
+  'COMP1843 Principles of Security',
+  'COMP1589 Computer Systems and Internet Technologies',
+  'MACG101 Advanced math for Computer Science',
+  'COMP1773 User Interface Design',
+  'COMP1841 Web Programming 1',
+  'COMP1770 Professional Project Management',
+  'AIGW201 Introduction to Artificial Intelligence',
+  'COMP1551 Application Development',
+  'COMP1807 Agile Development with SCRUM',
+  'COMP1891 Applications in AI and Data Science',
+  'COMP1842 Web Programming 2',
+  'COMP1806 Information Security',
+  'FCVG101 Fundamentals of Computer Vision',
+  'COMP1682 Final Year Projects',
+  'COMP1664 Network Technology',
+  'COMP1860 IT Security and Privacy Risk Management',
+  'DPLG101 Deep Learning',
+  'COMP1787 Requirements Management',
+  'COMP1859 Information Retrieval',
+  'OJT On the Job Training'
+]
+
+const selectedStudent = computed(() => allStudents.value.find(s => s.id === form.value.student_id))
+const isITStudent = computed(() => {
+  if (!selectedStudent.value) return false
+  return selectedStudent.value.department === 'Công nghệ thông tin'
+})
+const isAIDSStudent = computed(() => {
+  if (!selectedStudent.value) return false
+  return selectedStudent.value.department === 'Trí tuệ nhân tạo và Khoa học dữ liệu'
+})
+const isAICyberStudent = computed(() => {
+  if (!selectedStudent.value) return false
+  return selectedStudent.value.department === 'Trí tuệ nhân tạo và An ninh mạng'
+})
 
 async function loadData() {
   const params = {}
@@ -133,12 +255,12 @@ async function saveScore() {
     }
     showForm.value = false
     loadData()
-  } catch (err) { alert(err.response?.data?.message || 'Lỗi') } finally { saving.value = false }
+  } catch (err) { alert(err.response?.data?.message || $t('admin.error_save')) } finally { saving.value = false }
 }
 
 async function deleteScore(id) {
-  if (!confirm('Xóa?')) return
-  try { await api.delete(`/top-scores/${id}`); loadData() } catch { alert('Lỗi') }
+  if (!confirm($t('admin.confirm_delete'))) return
+  try { await api.delete(`/top-scores/${id}`); loadData() } catch { alert($t('admin.error_delete')) }
 }
 
 watch(filterSemester, loadData)

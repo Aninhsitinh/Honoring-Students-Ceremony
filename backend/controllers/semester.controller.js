@@ -8,7 +8,7 @@ const semesterController = {
       res.json(semesters);
     } catch (error) {
       console.error('Get semesters error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -21,7 +21,7 @@ const semesterController = {
       res.json(semester);
     } catch (error) {
       console.error('Get semester error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -29,46 +29,48 @@ const semesterController = {
     try {
       const semester = await Semester.findActive();
       if (!semester) {
-        return res.status(404).json({ message: 'Không có kỳ học đang hoạt động' });
+        return res.status(404).json({ message: 'error.semester.no_active' });
       }
       res.json(semester);
     } catch (error) {
       console.error('Get active semester error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
   async create(req, res) {
     try {
-      const { name, year, description, is_active } = req.body;
+      const { name, year, description, is_active, theme_color } = req.body;
       const slug = slugify(`${name}-${year}`, { lower: true, locale: 'vi' });
+      const bg_image = req.file ? `/uploads/${req.file.filename}` : null;
 
       const existing = await Semester.findBySlug(slug);
       if (existing) {
-        return res.status(400).json({ message: 'Kỳ học này đã tồn tại' });
+        return res.status(400).json({ message: 'error.semester.exists' });
       }
 
-      const semester = await Semester.create({ name, year, slug, description, is_active });
+      const semester = await Semester.create({ name, year, slug, description, is_active, theme_color, bg_image });
       res.status(201).json(semester);
     } catch (error) {
       console.error('Create semester error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
   async update(req, res) {
     try {
-      const { name, year, description, is_active } = req.body;
+      const { name, year, description, is_active, theme_color } = req.body;
       const slug = slugify(`${name}-${year}`, { lower: true, locale: 'vi' });
+      const bg_image = req.file ? `/uploads/${req.file.filename}` : req.body.bg_image;
 
-      const semester = await Semester.update(req.params.id, { name, year, slug, description, is_active });
+      const semester = await Semester.update(req.params.id, { name, year, slug, description, is_active, theme_color, bg_image });
       if (!semester) {
         return res.status(404).json({ message: 'Không tìm thấy kỳ học' });
       }
       res.json(semester);
     } catch (error) {
       console.error('Update semester error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -76,12 +78,12 @@ const semesterController = {
     try {
       const semester = await Semester.delete(req.params.id);
       if (!semester) {
-        return res.status(404).json({ message: 'Không tìm thấy kỳ học' });
+        return res.status(404).json({ message: 'error.semester.not_found' });
       }
-      res.json({ message: 'Đã xóa kỳ học', semester });
+      res.json({ message: 'semester.deleted', semester });
     } catch (error) {
       console.error('Delete semester error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 };

@@ -6,11 +6,10 @@
     <section class="section students-section">
       <div class="container">
         <h2 class="section-title">
-          <span class="gradient-text">Sinh Viên Xuất Sắc</span>
+          <span class="gradient-text">{{ $t('home.top_students') }}</span>
         </h2>
         <p class="section-subtitle">
-          Những sinh viên có thành tích học tập và hoạt động nổi bật nhất trong
-          {{ selectedSemester?.name }} {{ selectedSemester?.year }}
+          {{ $t('home.top_students_desc') }} - {{ selectedSemester?.name }} {{ selectedSemester?.year }}
         </p>
 
         <SearchBar v-model="searchQuery" />
@@ -20,22 +19,22 @@
             class="filter-tab"
             :class="{ active: filterType === 'all' }"
             @click="filterType = 'all'"
-          >Tất Cả</button>
+          >{{ $t('home.view_all') }}</button>
           <button
             class="filter-tab"
             :class="{ active: filterType === 'excellent' }"
             @click="filterType = 'excellent'"
-          >🏆 Xuất Sắc</button>
+          >🏆 {{ $t('home.top_students') }}</button>
           <button
             class="filter-tab"
             :class="{ active: filterType === 'top_score' }"
             @click="filterType = 'top_score'"
-          >⭐ Điểm Cao</button>
+          >⭐ {{ $t('home.highest_scores') }}</button>
         </div>
 
         <div v-if="loading" class="loading-state">
           <div class="loader"></div>
-          <p>Đang tải...</p>
+          <p>Loading...</p>
         </div>
 
         <div v-else-if="students.length" class="students-grid">
@@ -51,7 +50,7 @@
 
         <div v-else class="empty-state">
           <span class="empty-icon">📭</span>
-          <p>Chưa có sinh viên nào được vinh danh trong kỳ này.</p>
+          <p>{{ $t('home.no_students') }}</p>
         </div>
       </div>
     </section>
@@ -60,21 +59,21 @@
     <section class="section top-scores-section">
       <div class="container">
         <h2 class="section-title">
-          <span class="gradient-text">Điểm Cao Từng Môn</span>
+          <span class="gradient-text">{{ $t('home.highest_scores') }}</span>
         </h2>
         <p class="section-subtitle">
-          Sinh viên đạt điểm cao nhất ở từng môn học
+          {{ $t('home.highest_scores_desc') }}
         </p>
 
         <div v-if="topScores.length" class="scores-table-wrap glass">
           <table class="scores-table">
             <thead>
               <tr>
-                <th>Môn Học</th>
-                <th>Sinh Viên</th>
-                <th>MSSV</th>
-                <th>Khoa</th>
-                <th>Điểm</th>
+                <th>{{ $t('home.subject') }}</th>
+                <th>{{ $t('hero.students') }}</th>
+                <th>ID</th>
+                <th>Department</th>
+                <th>{{ $t('home.score') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -105,10 +104,10 @@
     <section class="section news-section" v-if="posts.length">
       <div class="container">
         <h2 class="section-title">
-          <span class="gradient-text">Tin Tức & Sự Kiện</span>
+          <span class="gradient-text">{{ $t('home.latest_news') }}</span>
         </h2>
         <p class="section-subtitle">
-          Các sự kiện vinh danh và hoạt động nổi bật
+          {{ $t('home.latest_news_desc') }}
         </p>
 
         <div class="posts-grid">
@@ -122,7 +121,7 @@
 
         <div class="view-all-wrap">
           <router-link to="/tin-tuc" class="btn btn-secondary">
-            Xem tất cả tin tức →
+            {{ $t('home.view_all') }} →
           </router-link>
         </div>
       </div>

@@ -5,17 +5,45 @@
         <div class="brand-logo-circle">
           <img :src="logoSrc" alt="Logo" class="brand-logo" />
         </div>
-        <span class="brand-text">GREENWICH VIETNAM</span>
+        <span class="brand-text gradient-text">Honoring Students</span>
       </router-link>
       
       <div class="navbar-links" :class="{ open: menuOpen }">
-        <a href="#" class="nav-link" @click="menuOpen = false">ABOUT</a>
-        <a href="#" class="nav-link" @click="menuOpen = false">PROGRAMS</a>
-        <a href="#" class="nav-link" @click="menuOpen = false">FAQ</a>
-        <a href="#" class="nav-link" @click="menuOpen = false">CONTACT</a>
+        <router-link to="/" class="nav-link" @click="menuOpen = false">{{ $t('nav.home') }}</router-link>
+        <router-link to="/tin-tuc" class="nav-link" @click="menuOpen = false">{{ $t('nav.news') }}</router-link>
+        <div class="nav-link semester-selector">
+          <button class="semester-btn" @click.stop="showSemesters = !showSemesters">
+            {{ $t('nav.semesters') }} ▾
+          </button>
+          <div class="semester-dropdown" v-show="showSemesters">
+            <button
+              v-for="sem in semesters"
+              :key="sem.id"
+              class="semester-option"
+              :class="{ active: selectedSemester?.id === sem.id }"
+              @click="selectSem(sem)"
+            >
+              {{ sem.name }} {{ sem.year }}
+              <span v-if="sem.is_active" class="badge badge-gold" style="margin-left: 8px;">{{ $t('admin.active') }}</span>
+            </button>
+          </div>
+        </div>
+        <div class="nav-link semester-selector">
+          <button class="semester-btn" @click.stop="showGraduation = !showGraduation; showSemesters = false">
+            Graduation ▾
+          </button>
+          <div class="semester-dropdown" v-show="showGraduation">
+            <a href="https://greenwich-ceremony-hrae.vercel.app/" target="_blank" class="semester-option">
+              Graduation 2026
+            </a>
+          </div>
+        </div>
       </div>
       
       <div class="navbar-actions">
+        <button class="theme-toggle" @click="toggleLanguage" title="Switch Language" style="font-weight: bold; font-size: 14px;">
+          {{ locale === 'en' ? 'EN' : 'VI' }}
+        </button>
         <button class="theme-toggle" @click="toggleTheme()" title="Toggle Theme">
           <span v-if="isDark" class="icon-moon">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -33,7 +61,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useSemesterStore } from '../../stores/semester'
 import { useDark, useToggle } from '@vueuse/core'
 import logoLight from '../../assets/logo_light-Cvl1LvYU.png'
 import logoDark from '../../assets/logo_dark-nY9adEwT.png'
@@ -42,6 +72,41 @@ const isDark = useDark({ valueDark: 'dark', valueLight: 'light' })
 const toggleTheme = useToggle(isDark)
 const logoSrc = computed(() => isDark.value ? logoDark : logoLight)
 const menuOpen = ref(false)
+
+const { locale } = useI18n()
+
+function toggleLanguage() {
+  locale.value = locale.value === 'en' ? 'vi' : 'en'
+  localStorage.setItem('lang', locale.value)
+}
+
+const semesterStore = useSemesterStore()
+const showSemesters = ref(false)
+const showGraduation = ref(false)
+
+const semesters = computed(() => semesterStore.semesters)
+const selectedSemester = computed(() => semesterStore.selectedSemester)
+
+function selectSem(sem) {
+  semesterStore.selectSemester(sem)
+  showSemesters.value = false
+}
+
+function closeDropdown(e) {
+  if (!e.target.closest('.semester-selector')) {
+    showSemesters.value = false
+    showGraduation.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', closeDropdown)
+  semesterStore.fetchAll()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeDropdown)
+})
 </script>
 
 <style scoped>
@@ -100,27 +165,80 @@ const menuOpen = ref(false)
   font-family: var(--font-heading);
   font-size: var(--text-base);
   font-weight: 800;
-  color: var(--color-text-primary);
   letter-spacing: 0.5px;
 }
 
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--space-4);
 }
 
 .nav-link {
   color: var(--color-text-secondary);
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--text-sm);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.nav-link:hover,
+.nav-link.router-link-exact-active {
+  color: var(--color-text-primary);
+  background: var(--color-bg-glass);
+}
+
+.semester-selector {
+  position: relative;
+}
+
+.semester-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.semester-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  min-width: 200px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeInDown 0.2s ease;
+}
+
+.semester-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
   transition: all var(--transition-fast);
   text-decoration: none;
 }
 
-.nav-link:hover {
-  color: var(--color-text-primary);
+.semester-option:hover,
+.semester-option.active {
+  background: var(--color-bg-glass);
+  color: var(--color-text-accent);
 }
 
 .navbar-actions {
@@ -178,6 +296,26 @@ const menuOpen = ref(false)
 @media (max-width: 860px) {
   .navbar-links {
     display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-bg-secondary);
+    flex-direction: column;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    pointer-events: auto;
+  }
+
+  .navbar-links.open {
+    display: flex;
+  }
+
+  .semester-dropdown {
+    position: static;
+    transform: none;
+    margin-top: var(--space-2);
   }
 
   .hamburger {

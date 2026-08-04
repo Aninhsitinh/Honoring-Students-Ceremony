@@ -8,14 +8,16 @@
       <div class="post-hero" :style="{ backgroundImage: post.thumbnail_url ? `url(${apiBase}${post.thumbnail_url})` : 'none' }">
         <div class="post-hero-overlay">
           <div class="container">
-            <router-link to="/tin-tuc" class="back-link">← Quay lại</router-link>
+            <button class="btn btn-secondary btn-sm" @click="$router.back()">
+              ← {{ $t('post.back') }}
+            </button>
             <div class="post-hero-content animate-fade-in-up">
               <div class="post-meta">
                 <span v-if="post.semester_name" class="badge badge-gold">
                   {{ post.semester_name }} {{ post.semester_year }}
                 </span>
                 <span class="post-date">{{ formatDate(post.published_at || post.created_at) }}</span>
-                <span class="post-author" v-if="post.author_name">bởi {{ post.author_name }}</span>
+                <span class="post-author" v-if="post.author_name">{{ $t('post.by') }} {{ post.author_name }}</span>
               </div>
               <h1 class="post-title">{{ post.title }}</h1>
             </div>
@@ -30,8 +32,8 @@
 
     <div v-else class="empty-state">
       <span class="empty-icon">🔍</span>
-      <p>Không tìm thấy bài viết.</p>
-      <router-link to="/tin-tuc" class="btn btn-secondary">← Quay lại danh sách</router-link>
+      <p>{{ $t('error.post.not_found') }}</p>
+      <router-link to="/tin-tuc" class="btn btn-secondary">← {{ $t('post.back') }}</router-link>
     </div>
   </div>
 </template>

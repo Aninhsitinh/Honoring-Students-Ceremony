@@ -3,30 +3,30 @@
     <div class="login-container animate-scale-in">
       <div class="login-header">
         <span class="login-icon">🔐</span>
-        <h1 class="gradient-text">Admin Login</h1>
-        <p>Đăng nhập để quản lý hệ thống</p>
+        <h1 class="gradient-text">{{ $t('admin.login_title') }}</h1>
+        <p>{{ $t('admin.login_desc') }}</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label class="form-label">Tên đăng nhập</label>
+          <label class="form-label">{{ $t('admin.username') }}</label>
           <input
             v-model="username"
             type="text"
             class="form-input"
-            placeholder="Nhập username..."
+            :placeholder="$t('admin.username_placeholder')"
             required
             autocomplete="username"
           />
         </div>
 
         <div class="form-group">
-          <label class="form-label">Mật khẩu</label>
+          <label class="form-label">{{ $t('admin.password') }}</label>
           <input
             v-model="password"
             type="password"
             class="form-input"
-            placeholder="Nhập mật khẩu..."
+            :placeholder="$t('admin.password_placeholder')"
             required
             autocomplete="current-password"
           />
@@ -35,11 +35,11 @@
         <div v-if="error" class="error-message">{{ error }}</div>
 
         <button type="submit" class="btn btn-primary btn-lg" :disabled="loading" style="width: 100%;">
-          {{ loading ? 'Đang đăng nhập...' : 'Đăng Nhập' }}
+          {{ loading ? $t('admin.logging_in') : $t('admin.login_btn') }}
         </button>
       </form>
 
-      <router-link to="/" class="back-home">← Quay về trang chủ</router-link>
+      <router-link to="/" class="back-home">← {{ $t('admin.back_home') }}</router-link>
     </div>
   </div>
 </template>
@@ -64,7 +64,7 @@ async function handleLogin() {
     await authStore.login(username.value, password.value)
     router.push({ name: 'Dashboard' })
   } catch (err) {
-    error.value = err.response?.data?.message || 'Đăng nhập thất bại'
+    error.value = err.response?.data?.message || 'Login failed'
   } finally {
     loading.value = false
   }

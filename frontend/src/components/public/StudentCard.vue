@@ -10,7 +10,7 @@
         <span class="badge" :class="badgeClass">{{ badgeText }}</span>
       </div>
       <div class="card-overlay">
-        <span class="view-detail">Xem chi tiết →</span>
+        <span class="view-detail">{{ $t('student.view_detail') }} →</span>
       </div>
     </div>
     <div class="card-body">
@@ -45,7 +45,7 @@ const badgeClass = computed(() => {
 })
 
 const badgeText = computed(() => {
-  return props.student.achievement_type === 'excellent' ? 'Xuất Sắc' : 'Điểm Cao'
+  return props.student.achievement_type === 'excellent' ? '🏆' : '⭐'
 })
 </script>
 

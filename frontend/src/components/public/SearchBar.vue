@@ -4,7 +4,7 @@
     <input
       type="text"
       class="search-input"
-      placeholder="Tìm kiếm sinh viên theo tên, MSSV, khoa..."
+      :placeholder="$t('home.search_placeholder')"
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
     />

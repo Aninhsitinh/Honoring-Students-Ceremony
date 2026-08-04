@@ -2,7 +2,7 @@
   <div class="posts-page">
     <div class="page-header">
       <div class="container">
-        <h1 class="page-title gradient-text animate-fade-in-down">Tin Tức & Sự Kiện</h1>
+        <h1 class="page-title gradient-text animate-fade-in-down">{{ $t('post.news_events') }}</h1>
         <p class="page-desc animate-fade-in-up delay-200">
           Cập nhật các sự kiện vinh danh, hoạt động nổi bật và tin tức mới nhất
         </p>
@@ -27,7 +27,7 @@
 
       <div v-else class="empty-state">
         <span class="empty-icon">📰</span>
-        <p>Chưa có bài viết nào.</p>
+        <p>{{ $t('post.no_news') }}</p>
       </div>
     </div>
   </div>

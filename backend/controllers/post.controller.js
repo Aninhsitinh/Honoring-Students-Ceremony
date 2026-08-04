@@ -18,7 +18,7 @@ const postController = {
       res.json({ posts, total, limit: parseInt(limit), offset: parseInt(offset) });
     } catch (error) {
       console.error('Get posts error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -26,12 +26,12 @@ const postController = {
     try {
       const post = await Post.findById(req.params.id);
       if (!post) {
-        return res.status(404).json({ message: 'Không tìm thấy bài viết' });
+        return res.status(404).json({ message: 'error.post.not_found' });
       }
       res.json(post);
     } catch (error) {
       console.error('Get post error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -39,12 +39,12 @@ const postController = {
     try {
       const post = await Post.findBySlug(req.params.slug);
       if (!post) {
-        return res.status(404).json({ message: 'Không tìm thấy bài viết' });
+        return res.status(404).json({ message: 'error.post.not_found' });
       }
       res.json(post);
     } catch (error) {
       console.error('Get post by slug error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -72,7 +72,7 @@ const postController = {
       res.status(201).json(post);
     } catch (error) {
       console.error('Create post error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -102,12 +102,12 @@ const postController = {
       });
 
       if (!post) {
-        return res.status(404).json({ message: 'Không tìm thấy bài viết' });
+        return res.status(404).json({ message: 'error.post.not_found' });
       }
       res.json(post);
     } catch (error) {
       console.error('Update post error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -115,12 +115,12 @@ const postController = {
     try {
       const post = await Post.delete(req.params.id);
       if (!post) {
-        return res.status(404).json({ message: 'Không tìm thấy bài viết' });
+        return res.status(404).json({ message: 'error.post.not_found' });
       }
-      res.json({ message: 'Đã xóa bài viết', post });
+      res.json({ message: 'post.deleted', post });
     } catch (error) {
       console.error('Delete post error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 };

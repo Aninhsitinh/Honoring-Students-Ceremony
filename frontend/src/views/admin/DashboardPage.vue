@@ -1,18 +1,18 @@
 <template>
   <div class="dashboard">
     <div class="stats-grid">
-      <div class="stat-card glass" v-for="stat in stats" :key="stat.label">
+      <div class="stat-card glass" v-for="(stat, index) in stats" :key="index">
         <span class="stat-icon">{{ stat.icon }}</span>
         <div class="stat-info">
           <span class="stat-value">{{ stat.value }}</span>
-          <span class="stat-label">{{ stat.label }}</span>
+          <span class="stat-label">{{ $t(stat.labelKey) }}</span>
         </div>
       </div>
     </div>
 
     <div class="dashboard-grid">
       <div class="dashboard-card glass">
-        <h3>Sinh Viên Mới Nhất</h3>
+        <h3>{{ $t('admin.just_added_student') }}</h3>
         <div class="recent-list">
           <div v-for="s in recentStudents" :key="s.id" class="recent-item">
             <div class="recent-avatar">{{ s.full_name?.charAt(0) }}</div>
@@ -21,21 +21,21 @@
               <span class="recent-meta">{{ s.department }} · {{ s.student_code }}</span>
             </div>
             <span class="badge" :class="s.achievement_type === 'excellent' ? 'badge-gold' : 'badge-blue'" style="font-size: 0.6rem;">
-              {{ s.achievement_type === 'excellent' ? 'Xuất Sắc' : 'Điểm Cao' }}
+              {{ s.achievement_type === 'excellent' ? $t('admin.type_excellent') : $t('admin.type_topscore') }}
             </span>
           </div>
         </div>
       </div>
 
       <div class="dashboard-card glass">
-        <h3>Bài Viết Gần Đây</h3>
+        <h3>{{ $t('admin.recent_activity') }}</h3>
         <div class="recent-list">
           <div v-for="p in recentPosts" :key="p.id" class="recent-item">
             <div class="recent-avatar post-avatar">📝</div>
             <div class="recent-info">
               <span class="recent-name">{{ p.title }}</span>
               <span class="recent-meta">
-                {{ p.is_published ? '✅ Đã xuất bản' : '📋 Bản nháp' }}
+                {{ p.is_published ? '✅ ' + $t('admin.published') : '📋 ' + $t('admin.draft') }}
               </span>
             </div>
           </div>
@@ -50,10 +50,10 @@ import { ref, onMounted } from 'vue'
 import api from '../../api/axios'
 
 const stats = ref([
-  { icon: '👨‍🎓', label: 'Sinh Viên', value: 0 },
-  { icon: '📅', label: 'Kỳ Học', value: 0 },
-  { icon: '📝', label: 'Bài Viết', value: 0 },
-  { icon: '⭐', label: 'Điểm Cao', value: 0 },
+  { icon: '👨‍🎓', labelKey: 'admin.total_students', value: 0 },
+  { icon: '📅', labelKey: 'admin.all_semesters', value: 0 },
+  { icon: '📝', labelKey: 'admin.manage_posts', value: 0 },
+  { icon: '⭐', labelKey: 'admin.type_topscore', value: 0 },
 ])
 
 const recentStudents = ref([])

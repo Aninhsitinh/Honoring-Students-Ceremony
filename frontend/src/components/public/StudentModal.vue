@@ -17,7 +17,7 @@
             <div class="modal-info-section">
               <div class="modal-badge">
                 <span class="badge" :class="student.achievement_type === 'excellent' ? 'badge-gold' : 'badge-blue'">
-                  {{ student.achievement_type === 'excellent' ? '🏆 Sinh Viên Xuất Sắc' : '⭐ Điểm Cao' }}
+                  {{ student.achievement_type === 'excellent' ? $t('student.excellent') : $t('student.high_score') }}
                 </span>
               </div>
 
@@ -25,26 +25,26 @@
 
               <div class="modal-meta">
                 <div class="meta-item">
-                  <span class="meta-label">MSSV</span>
+                  <span class="meta-label">{{ $t('student.id') }}</span>
                   <span class="meta-value">{{ student.student_code }}</span>
                 </div>
                 <div class="meta-item">
-                  <span class="meta-label">Khoa</span>
+                  <span class="meta-label">{{ $t('student.department') }}</span>
                   <span class="meta-value">{{ student.department }}</span>
                 </div>
                 <div class="meta-item">
-                  <span class="meta-label">Kỳ học</span>
+                  <span class="meta-label">{{ $t('student.semester') }}</span>
                   <span class="meta-value">{{ student.semester_name }} {{ student.semester_year }}</span>
                 </div>
               </div>
 
               <div class="modal-description">
-                <h4>Thành Tích</h4>
+                <h4>{{ $t('student.achievement') }}</h4>
                 <p>{{ student.description }}</p>
               </div>
 
               <div v-if="student.top_scores?.length" class="modal-scores">
-                <h4>Điểm Cao Các Môn</h4>
+                <h4>{{ $t('student.top_scores') }}</h4>
                 <div class="score-list">
                   <div v-for="ts in student.top_scores" :key="ts.id" class="score-item">
                     <span class="score-subject">{{ ts.subject_name }}</span>

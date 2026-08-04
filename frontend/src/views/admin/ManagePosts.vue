@@ -2,18 +2,18 @@
   <div class="manage-page">
     <div class="page-top">
       <div></div>
-      <button class="btn btn-primary" @click="openForm()">+ Thêm Bài Viết</button>
+      <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_post') }}</button>
     </div>
 
     <div class="data-table-wrap glass">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Tiêu đề</th>
-            <th>Kỳ Học</th>
-            <th>Trạng thái</th>
-            <th>Ngày tạo</th>
-            <th>Thao Tác</th>
+            <th>{{ $t('admin.title') }}</th>
+            <th>{{ $t('student.semester') }}</th>
+            <th>{{ $t('admin.status') }}</th>
+            <th>{{ $t('admin.date_posted') }}</th>
+            <th>{{ $t('admin.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -24,14 +24,14 @@
             <td>{{ p.semester_name ? `${p.semester_name} ${p.semester_year}` : '—' }}</td>
             <td>
               <span class="badge" :class="p.is_published ? 'badge-green' : 'badge-purple'">
-                {{ p.is_published ? 'Đã xuất bản' : 'Bản nháp' }}
+                {{ p.is_published ? $t('admin.published') : $t('admin.draft') }}
               </span>
             </td>
             <td>{{ formatDate(p.created_at) }}</td>
             <td>
               <div class="actions">
-                <button class="btn btn-secondary btn-sm" @click="openForm(p)">Sửa</button>
-                <button class="btn btn-danger btn-sm" @click="deletePost(p.id)">Xóa</button>
+                <button class="btn btn-secondary btn-sm" @click="openForm(p)">{{ $t('admin.edit') }}</button>
+                <button class="btn btn-danger btn-sm" @click="deletePost(p.id)">{{ $t('admin.delete') }}</button>
               </div>
             </td>
           </tr>
@@ -44,45 +44,45 @@
       <div v-if="showForm" class="modal-backdrop" @click.self="showForm = false">
         <div class="modal-content glass-strong animate-scale-in" style="max-width: 700px;">
           <button class="modal-close" @click="showForm = false">✕</button>
-          <h3 class="modal-title gradient-text">{{ editingId ? 'Sửa Bài Viết' : 'Thêm Bài Viết' }}</h3>
+          <h3 class="modal-title gradient-text">{{ editingId ? $t('admin.edit_post') : $t('admin.add_post') }}</h3>
 
           <form @submit.prevent="savePost">
             <div class="form-group">
-              <label class="form-label">Tiêu đề *</label>
+              <label class="form-label">{{ $t('admin.title') }} *</label>
               <input v-model="form.title" class="form-input" required />
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Kỳ học</label>
+                <label class="form-label">{{ $t('student.semester') }}</label>
                 <select v-model="form.semester_id" class="form-select">
-                  <option value="">Không chọn</option>
+                  <option value="">{{ $t('admin.none_selected') }}</option>
                   <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ sem.name }} {{ sem.year }}</option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label">Trạng thái</label>
+                <label class="form-label">{{ $t('admin.status') }}</label>
                 <select v-model="form.is_published" class="form-select">
-                  <option :value="false">Bản nháp</option>
-                  <option :value="true">Xuất bản</option>
+                  <option :value="false">{{ $t('admin.draft') }}</option>
+                  <option :value="true">{{ $t('admin.published') }}</option>
                 </select>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Ảnh thumbnail</label>
+              <label class="form-label">{{ $t('admin.cover_image') }}</label>
               <input type="file" @change="handleFile" accept="image/*" class="form-input" />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Nội dung (HTML) *</label>
+              <label class="form-label">{{ $t('admin.content') }} (HTML) *</label>
               <textarea v-model="form.content" class="form-textarea" rows="10" required
                 placeholder="<h2>Tiêu đề</h2><p>Nội dung bài viết...</p>"></textarea>
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="showForm = false">Hủy</button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? 'Đang lưu...' : 'Lưu' }}</button>
+              <button type="button" class="btn btn-secondary" @click="showForm = false">{{ $t('admin.cancel') }}</button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? $t('admin.saving') : $t('admin.save') }}</button>
             </div>
           </form>
         </div>
@@ -94,7 +94,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../../api/axios'
+import { useI18n } from 'vue-i18n'
 
+const { t: $t } = useI18n()
 const posts = ref([])
 const semesters = ref([])
 const showForm = ref(false)
@@ -150,12 +152,12 @@ async function savePost() {
     }
     showForm.value = false
     loadPosts()
-  } catch (err) { alert(err.response?.data?.message || 'Lỗi') } finally { saving.value = false }
+  } catch (err) { alert(err.response?.data?.message || $t('admin.error_save')) } finally { saving.value = false }
 }
 
 async function deletePost(id) {
-  if (!confirm('Xóa bài viết?')) return
-  try { await api.delete(`/posts/${id}`); loadPosts() } catch { alert('Lỗi') }
+  if (!confirm($t('admin.confirm_delete'))) return
+  try { await api.delete(`/posts/${id}`); loadPosts() } catch { alert($t('admin.error_delete')) }
 }
 
 onMounted(() => { loadSemesters(); loadPosts() })

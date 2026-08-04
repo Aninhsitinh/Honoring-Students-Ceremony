@@ -1,6 +1,41 @@
 const Student = require('../models/student.model');
 const TopScore = require('../models/topScore.model');
 
+const DEPARTMENTS = {
+  GCS: [
+    'Công nghệ thông tin',
+    'Trí tuệ nhân tạo và Khoa học dữ liệu',
+    'Trí tuệ nhân tạo và An ninh mạng'
+  ],
+  GBS: [
+    'Quản trị Kinh doanh',
+    'Quản trị Marketing',
+    'Quản trị Sự kiện',
+    'Quản trị Truyền thông',
+    'Kinh doanh quốc tế',
+    'Logistics và Quản trị Chuỗi cung ứng'
+  ],
+  GDS: [
+    'Thiết kế đồ họa & kỹ thuật số',
+    'Truyền thông đa phương tiện'
+  ]
+};
+
+function validateStudentCode(code, department) {
+  if (!code || !department) return false;
+  let expectedPrefix = null;
+  for (const [prefix, majors] of Object.entries(DEPARTMENTS)) {
+    if (majors.includes(department)) {
+      expectedPrefix = prefix;
+      break;
+    }
+  }
+  if (!expectedPrefix) return false; // Unknown department
+
+  const regex = new RegExp(`^${expectedPrefix}\\d{6}$`);
+  return regex.test(code);
+}
+
 const studentController = {
   async getAll(req, res) {
     try {
@@ -16,7 +51,7 @@ const studentController = {
       res.json({ students, total, limit: parseInt(limit), offset: parseInt(offset) });
     } catch (error) {
       console.error('Get students error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -24,14 +59,14 @@ const studentController = {
     try {
       const student = await Student.findById(req.params.id);
       if (!student) {
-        return res.status(404).json({ message: 'Không tìm thấy sinh viên' });
+        return res.status(404).json({ message: 'error.student.not_found' });
       }
       // Also get top scores for this student
       const topScores = await TopScore.findByStudentId(student.id);
       res.json({ ...student, top_scores: topScores });
     } catch (error) {
       console.error('Get student error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -39,6 +74,10 @@ const studentController = {
     try {
       const { full_name, student_code, department, description, achievement_type, semester_id, sort_order } = req.body;
       let avatar_url = req.body.avatar_url || null;
+
+      if (!validateStudentCode(student_code, department)) {
+        return res.status(400).json({ message: 'error.student.invalid_code' });
+      }
 
       if (req.file) {
         avatar_url = `/uploads/${req.file.filename}`;
@@ -57,7 +96,7 @@ const studentController = {
       res.status(201).json(student);
     } catch (error) {
       console.error('Create student error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -65,6 +104,10 @@ const studentController = {
     try {
       const { full_name, student_code, department, description, achievement_type, semester_id, sort_order } = req.body;
       let avatar_url = req.body.avatar_url || null;
+
+      if (!validateStudentCode(student_code, department)) {
+        return res.status(400).json({ message: 'error.student.invalid_code' });
+      }
 
       if (req.file) {
         avatar_url = `/uploads/${req.file.filename}`;
@@ -88,12 +131,12 @@ const studentController = {
       });
 
       if (!student) {
-        return res.status(404).json({ message: 'Không tìm thấy sinh viên' });
+        return res.status(404).json({ message: 'error.student.not_found' });
       }
       res.json(student);
     } catch (error) {
       console.error('Update student error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -101,12 +144,12 @@ const studentController = {
     try {
       const student = await Student.delete(req.params.id);
       if (!student) {
-        return res.status(404).json({ message: 'Không tìm thấy sinh viên' });
+        return res.status(404).json({ message: 'error.student.not_found' });
       }
-      res.json({ message: 'Đã xóa sinh viên', student });
+      res.json({ message: 'student.deleted', student });
     } catch (error) {
       console.error('Delete student error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 };

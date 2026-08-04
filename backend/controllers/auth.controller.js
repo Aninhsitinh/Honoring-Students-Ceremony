@@ -8,17 +8,17 @@ const authController = {
       const { username, password } = req.body;
 
       if (!username || !password) {
-        return res.status(400).json({ message: 'Vui lòng nhập username và password' });
+        return res.status(400).json({ message: 'error.auth.missing_credentials' });
       }
 
       const user = await User.findByUsername(username);
       if (!user) {
-        return res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu' });
+        return res.status(401).json({ message: 'error.auth.invalid' });
       }
 
       const isMatch = await bcrypt.compare(password, user.password_hash);
       if (!isMatch) {
-        return res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu' });
+        return res.status(401).json({ message: 'error.auth.invalid' });
       }
 
       const token = jwt.sign(
@@ -28,7 +28,7 @@ const authController = {
       );
 
       res.json({
-        message: 'Đăng nhập thành công',
+        message: 'auth.login_success',
         token,
         user: {
           id: user.id,
@@ -39,7 +39,7 @@ const authController = {
       });
     } catch (error) {
       console.error('Login error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -47,12 +47,12 @@ const authController = {
     try {
       const user = await User.findById(req.user.id);
       if (!user) {
-        return res.status(404).json({ message: 'Không tìm thấy user' });
+        return res.status(404).json({ message: 'error.user_not_found' });
       }
       res.json(user);
     } catch (error) {
-      console.error('Me error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      console.error('Get profile error:', error);
+      res.status(500).json({ message: 'error.server' });
     }
   },
 };

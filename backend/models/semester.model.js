@@ -21,25 +21,25 @@ const Semester = {
     return result.rows[0];
   },
 
-  async create({ name, year, slug, description, is_active = false }) {
+  async create({ name, year, slug, description, is_active = false, theme_color = null, bg_image = null }) {
     // If setting as active, deactivate others first
     if (is_active) {
       await db.query('UPDATE semesters SET is_active = false');
     }
     const result = await db.query(
-      'INSERT INTO semesters (name, year, slug, description, is_active) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [name, year, slug, description, is_active]
+      'INSERT INTO semesters (name, year, slug, description, is_active, theme_color, bg_image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [name, year, slug, description, is_active, theme_color, bg_image]
     );
     return result.rows[0];
   },
 
-  async update(id, { name, year, slug, description, is_active }) {
+  async update(id, { name, year, slug, description, is_active, theme_color, bg_image }) {
     if (is_active) {
       await db.query('UPDATE semesters SET is_active = false');
     }
     const result = await db.query(
-      'UPDATE semesters SET name = $1, year = $2, slug = $3, description = $4, is_active = $5 WHERE id = $6 RETURNING *',
-      [name, year, slug, description, is_active, id]
+      'UPDATE semesters SET name = $1, year = $2, slug = $3, description = $4, is_active = $5, theme_color = $6, bg_image = $7 WHERE id = $8 RETURNING *',
+      [name, year, slug, description, is_active, theme_color, bg_image, id]
     );
     return result.rows[0];
   },

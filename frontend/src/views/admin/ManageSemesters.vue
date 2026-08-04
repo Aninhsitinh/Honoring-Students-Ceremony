@@ -2,7 +2,7 @@
   <div class="manage-page">
     <div class="page-top">
       <div></div>
-      <button class="btn btn-primary" @click="openForm()">+ Thêm Kỳ Học</button>
+      <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_semester') }}</button>
     </div>
 
     <div class="semesters-grid">
@@ -10,17 +10,20 @@
         <div class="semester-header">
           <h3>{{ sem.name }}</h3>
           <span class="badge" :class="sem.is_active ? 'badge-green' : 'badge-purple'">
-            {{ sem.is_active ? 'Đang hoạt động' : 'Không hoạt động' }}
+            {{ sem.is_active ? $t('admin.active_status') : $t('admin.closed_status') }}
           </span>
         </div>
         <div class="semester-meta">
           <span class="year">{{ sem.year }}</span>
           <span class="slug">{{ sem.slug }}</span>
         </div>
-        <p class="semester-desc">{{ sem.description || 'Chưa có mô tả' }}</p>
+        <div class="theme-preview" v-if="sem.theme_color">
+          {{ $t('admin.color_bg') }} <span class="color-swatch" :style="{ backgroundColor: sem.theme_color }"></span>
+        </div>
+        <p class="semester-desc">{{ sem.description || $t('admin.no_desc') }}</p>
         <div class="semester-actions">
-          <button class="btn btn-secondary btn-sm" @click="openForm(sem)">Sửa</button>
-          <button class="btn btn-danger btn-sm" @click="deleteSemester(sem.id)">Xóa</button>
+          <button class="btn btn-secondary btn-sm" @click="openForm(sem)">{{ $t('admin.edit') }}</button>
+          <button class="btn btn-danger btn-sm" @click="deleteSemester(sem.id)">{{ $t('admin.delete') }}</button>
         </div>
       </div>
     </div>
@@ -30,38 +33,48 @@
       <div v-if="showForm" class="modal-backdrop" @click.self="showForm = false">
         <div class="modal-content glass-strong animate-scale-in" style="max-width: 500px;">
           <button class="modal-close" @click="showForm = false">✕</button>
-          <h3 class="modal-title gradient-text">{{ editingId ? 'Sửa Kỳ Học' : 'Thêm Kỳ Học' }}</h3>
+          <h3 class="modal-title gradient-text">{{ editingId ? $t('admin.edit_semester') : $t('admin.add_semester') }}</h3>
 
           <form @submit.prevent="saveSemester">
             <div class="form-group">
-              <label class="form-label">Tên kỳ học *</label>
+              <label class="form-label">{{ $t('admin.sem_name') }} *</label>
               <select v-model="form.name" class="form-select" required>
-                <option value="Kỳ Xuân">Kỳ Xuân</option>
-                <option value="Kỳ Hè">Kỳ Hè</option>
-                <option value="Kỳ Thu">Kỳ Thu</option>
+                <option value="Kỳ Xuân">{{ $t('admin.sem_spring') }}</option>
+                <option value="Kỳ Hè">{{ $t('admin.sem_summer') }}</option>
+                <option value="Kỳ Thu">{{ $t('admin.sem_fall') }}</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Năm *</label>
+              <label class="form-label">{{ $t('admin.year') }} *</label>
               <input v-model.number="form.year" type="number" class="form-input" required min="2020" max="2030" />
             </div>
 
             <div class="form-group">
-              <label class="form-label">Mô tả</label>
+              <label class="form-label">{{ $t('admin.theme_color') }}</label>
+              <input v-model="form.theme_color" type="color" class="form-color-picker" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ $t('admin.bg_image') }}</label>
+              <input type="file" @change="handleFileUpload" class="form-input" accept="image/*" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ $t('admin.desc') }}</label>
               <textarea v-model="form.description" class="form-textarea" rows="3"></textarea>
             </div>
 
             <div class="form-group">
               <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input type="checkbox" v-model="form.is_active" style="width: 18px; height: 18px;" />
-                Đặt làm kỳ học đang hoạt động
+                {{ $t('admin.activate') }}
               </label>
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" @click="showForm = false">Hủy</button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? 'Đang lưu...' : 'Lưu' }}</button>
+              <button type="button" class="btn btn-secondary" @click="showForm = false">{{ $t('admin.cancel') }}</button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">{{ saving ? $t('admin.saving') : $t('admin.save') }}</button>
             </div>
           </form>
         </div>
@@ -73,26 +86,34 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../../api/axios'
+import { useI18n } from 'vue-i18n'
 
+const { t: $t } = useI18n()
 const semesters = ref([])
 const showForm = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
 
-const form = ref({ name: 'Kỳ Xuân', year: new Date().getFullYear(), description: '', is_active: false })
+const form = ref({ name: 'Kỳ Xuân', year: new Date().getFullYear(), description: '', is_active: false, theme_color: '#0b1120' })
+const selectedFile = ref(null)
 
 async function loadSemesters() {
   const { data } = await api.get('/semesters')
   semesters.value = data
 }
 
+function handleFileUpload(e) {
+  selectedFile.value = e.target.files[0]
+}
+
 function openForm(sem = null) {
+  selectedFile.value = null
   if (sem) {
     editingId.value = sem.id
-    form.value = { name: sem.name, year: sem.year, description: sem.description, is_active: sem.is_active }
+    form.value = { name: sem.name, year: sem.year, description: sem.description, is_active: sem.is_active, theme_color: sem.theme_color || '#0b1120' }
   } else {
     editingId.value = null
-    form.value = { name: 'Kỳ Xuân', year: new Date().getFullYear(), description: '', is_active: false }
+    form.value = { name: 'Kỳ Xuân', year: new Date().getFullYear(), description: '', is_active: false, theme_color: '#0b1120' }
   }
   showForm.value = true
 }
@@ -100,19 +121,29 @@ function openForm(sem = null) {
 async function saveSemester() {
   saving.value = true
   try {
+    const formData = new FormData()
+    formData.append('name', form.value.name)
+    formData.append('year', form.value.year)
+    formData.append('description', form.value.description)
+    formData.append('is_active', form.value.is_active)
+    formData.append('theme_color', form.value.theme_color)
+    if (selectedFile.value) {
+      formData.append('bg_image', selectedFile.value)
+    }
+
     if (editingId.value) {
-      await api.put(`/semesters/${editingId.value}`, form.value)
+      await api.put(`/semesters/${editingId.value}`, formData)
     } else {
-      await api.post('/semesters', form.value)
+      await api.post('/semesters', formData)
     }
     showForm.value = false
     loadSemesters()
-  } catch (err) { alert(err.response?.data?.message || 'Lỗi') } finally { saving.value = false }
+  } catch (err) { alert(err.response?.data?.message || $t('admin.error_save')) } finally { saving.value = false }
 }
 
 async function deleteSemester(id) {
-  if (!confirm('Xóa kỳ học này sẽ xóa tất cả sinh viên và điểm cao liên quan. Tiếp tục?')) return
-  try { await api.delete(`/semesters/${id}`); loadSemesters() } catch { alert('Lỗi') }
+  if (!confirm($t('admin.delete_sem_confirm'))) return
+  try { await api.delete(`/semesters/${id}`); loadSemesters() } catch { alert($t('admin.error_delete')) }
 }
 
 onMounted(loadSemesters)
