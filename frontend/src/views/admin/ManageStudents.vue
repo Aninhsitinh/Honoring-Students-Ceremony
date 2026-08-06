@@ -9,16 +9,16 @@
       </div>
       <div class="page-top-right" style="display: flex; gap: var(--space-3); align-items: center;">
         <button class="btn btn-danger" v-if="selectedIds.length > 0" @click="bulkDelete">
-          <span class="icon" v-html="trashIcon"></span> Xóa ({{ selectedIds.length }})
+          <span class="icon" v-html="trashIcon"></span> {{ $t('admin.delete') }} ({{ selectedIds.length }})
         </button>
         <button class="btn btn-secondary" @click="exportExcel">
-          <span class="icon" v-html="downloadIcon"></span> Xuất Excel
+          <span class="icon" v-html="downloadIcon"></span> {{ $t('admin.export_excel') }}
         </button>
         <input type="file" ref="fileInput" @change="handleImport" accept=".xlsx, .xls, .csv" style="display: none">
         <button class="btn btn-secondary" @click="triggerFileInput" :disabled="importing">
           <span class="icon" v-html="uploadIcon"></span>
-          <span v-if="!importing">Import Excel</span>
-          <span v-else>{{ importProgress.done }}/{{ importProgress.total }} đang nhập...</span>
+          <span v-if="!importing">{{ $t('admin.import_excel') }}</span>
+          <span v-else>{{ importProgress.done }}/{{ importProgress.total }} {{ $t('admin.importing') }}</span>
         </button>
         <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_student') }}</button>
       </div>
@@ -209,21 +209,21 @@ function toggleAll() {
 
 async function bulkDelete() {
   if (selectedIds.value.length === 0) return
-  if (await confirm(`Bạn có chắc chắn muốn xóa ${selectedIds.value.length} sinh viên đã chọn?`)) {
+  if (await confirm(t('admin.delete_students_confirm', { count: selectedIds.value.length }))) {
     try {
       await api.post('/students/bulk-delete', { ids: selectedIds.value })
-      toast.success('Đã xóa thành công')
+      toast.success(t('admin.delete_success'))
       selectedIds.value = []
       loadStudents()
     } catch (e) {
-      toast.error('Lỗi khi xóa hàng loạt')
+      toast.error(t('admin.error_delete'))
     }
   }
 }
 
 function exportExcel() {
   if (!students.value.length) {
-    toast.error('Không có dữ liệu để xuất')
+    toast.error(t('admin.no_export_data'))
     return
   }
   const dataToExport = students.value.map(s => ({

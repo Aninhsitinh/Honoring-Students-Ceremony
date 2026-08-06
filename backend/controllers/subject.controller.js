@@ -32,7 +32,7 @@ const subjectController = {
       res.json(subjects);
     } catch (error) {
       console.error('Get subjects error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -41,15 +41,19 @@ const subjectController = {
       const { code, name } = req.body;
       const department = normalizeDepartment(req.body.department);
       if (!code || !name || !department) {
-        return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
+        return res.status(400).json({ message: 'error.subject.missing_info' });
       }
-      const subject = await Subject.create({ code: code.trim(), name: name.trim(), department });
+
+      const existing = await Subject.findByCode(code);
+      if (existing && existing.department === department) {
+        return res.status(400).json({ message: 'error.subject.exists' });
+      }
+
+      const subject = await Subject.create({ code, name, department });
       res.status(201).json(subject);
     } catch (error) {
-      if (error.code === '23505' || error.code === 'P2002') { // unique violation
-        return res.status(400).json({ message: 'Mã môn học này đã tồn tại trong chuyên ngành' });
-      }
-      res.status(500).json({ message: 'Lỗi server' });
+      console.error('Create subject error:', error);
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -57,25 +61,33 @@ const subjectController = {
     try {
       const { code, name } = req.body;
       const department = normalizeDepartment(req.body.department);
-      const subject = await Subject.update(req.params.id, { code: code?.trim(), name: name?.trim(), department });
-      if (!subject) return res.status(404).json({ message: 'Không tìm thấy môn học' });
-      res.json(subject);
-    } catch (error) {
-      if (error.code === '23505' || error.code === 'P2002') {
-        return res.status(400).json({ message: 'Mã môn học này đã tồn tại trong chuyên ngành' });
+      const subject = await Subject.findById(req.params.id);
+      
+      if (!subject) return res.status(404).json({ message: 'error.subject.not_found' });
+
+      if (code && code !== subject.code) {
+        const existing = await Subject.findByCode(code);
+        if (existing && existing.department === department) {
+          return res.status(400).json({ message: 'error.subject.exists' });
+        }
       }
-      res.status(500).json({ message: 'Lỗi server' });
+
+      const updated = await Subject.update(req.params.id, { code, name, department });
+      res.json(updated);
+    } catch (error) {
+      console.error('Update subject error:', error);
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
   async delete(req, res) {
     try {
       const subject = await Subject.delete(req.params.id);
-      if (!subject) return res.status(404).json({ message: 'Không tìm thấy môn học' });
-      res.json({ message: 'Đã xóa môn học', subject });
+      if (!subject) return res.status(404).json({ message: 'error.subject.not_found' });
+      res.json({ message: 'admin.delete_success', subject });
     } catch (error) {
       console.error('Delete subject error:', error);
-      res.status(500).json({ message: 'Lỗi server' });
+      res.status(500).json({ message: 'error.server' });
     }
   },
 
@@ -85,7 +97,7 @@ const subjectController = {
       return res.status(400).json({ message: 'Invalid data' });
     }
     const result = await Subject.deleteMany(ids);
-    res.json({ message: 'Đã xóa các môn học', count: result.count });
+    res.json({ message: 'admin.delete_success', count: result.count });
   })
 };
 

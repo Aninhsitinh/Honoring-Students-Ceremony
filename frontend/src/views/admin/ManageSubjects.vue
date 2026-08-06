@@ -11,11 +11,11 @@
       </div>
       <div class="page-top-right" style="display: flex; gap: var(--space-3); align-items: center;">
         <button class="btn btn-danger" v-if="selectedIds.length > 0" @click="bulkDelete">
-          <span class="icon" v-html="trashIcon"></span> Xóa ({{ selectedIds.length }})
+          <span class="icon" v-html="trashIcon"></span> {{ $t('admin.delete') }} ({{ selectedIds.length }})
         </button>
         <input type="file" ref="fileInput" @change="handleImport" accept=".xlsx, .xls, .csv" style="display: none">
         <button class="btn btn-secondary" @click="triggerFileInput" :disabled="importing">
-          <span class="icon" v-html="uploadIcon"></span> {{ importing ? 'Importing...' : 'Import Excel' }}
+          <span class="icon" v-html="uploadIcon"></span> {{ importing ? $t('admin.importing') : $t('admin.import_excel') }}
         </button>
         <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_subject') }}</button>
       </div>
@@ -141,14 +141,14 @@ function toggleAll() {
 
 async function bulkDelete() {
   if (selectedIds.value.length === 0) return
-  if (await confirm($t('admin.delete_subject_confirm'))) {
+  if (await confirm($t('admin.delete_subjects_confirm', { count: selectedIds.value.length }))) {
     try {
       await api.post('/subjects/bulk-delete', { ids: selectedIds.value })
-      toast.success('Đã xóa thành công')
+      toast.success($t('admin.delete_success'))
       selectedIds.value = []
       loadSubjects()
     } catch (e) {
-      toast.error('Lỗi khi xóa hàng loạt')
+      toast.error($t('admin.error_delete'))
     }
   }
 }

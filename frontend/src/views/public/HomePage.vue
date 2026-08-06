@@ -50,8 +50,8 @@
 
         <div v-if="hasMoreStudents" class="view-all-wrap">
           <button class="btn btn-secondary" @click="loadMoreStudents" :disabled="loadingMore">
-            <span v-if="loadingMore">Đang tải...</span>
-            <span v-else>Xem thêm sinh viên ↓</span>
+            <span v-if="loadingMore">{{ $t('post.loading') }}</span>
+            <span v-else>{{ $t('home.load_more_students') }}</span>
           </button>
         </div>
 

@@ -33,7 +33,8 @@ export default {
     view_all: 'Xem tất cả',
     search_placeholder: 'Tìm kiếm sinh viên, môn học...',
     subject: 'Môn',
-    score: 'Điểm'
+    score: 'Điểm',
+    load_more_students: 'Xem thêm sinh viên ↓'
   },
   // Footer
   footer: {
@@ -113,6 +114,12 @@ export default {
     eg_subject_name: 'VD: Media Technologies',
     error_occurred: 'Có lỗi xảy ra',
     delete_subject_confirm: 'Bạn có chắc chắn muốn xóa môn học này không?',
+    delete_students_confirm: 'Bạn có chắc chắn muốn xóa {count} sinh viên đã chọn?',
+    delete_subjects_confirm: 'Bạn có chắc chắn muốn xóa {count} môn học đã chọn?',
+    export_excel: 'Xuất Excel',
+    import_excel: 'Import Excel',
+    importing: 'Đang nhập...',
+    no_export_data: 'Không có dữ liệu để xuất',
     none_selected: 'Không chọn',
     // Students
     student_type: 'Loại',
@@ -173,6 +180,7 @@ export default {
   error: {
     server: 'Lỗi server',
     not_found: 'Không tìm thấy',
+    invalid_data: 'Dữ liệu không hợp lệ',
     auth: {
       missing_credentials: 'Vui lòng nhập username và password',
       invalid: 'Sai tên đăng nhập hoặc mật khẩu'
@@ -182,6 +190,12 @@ export default {
       not_found: 'Không tìm thấy kỳ học',
       no_active: 'Không có kỳ học đang hoạt động',
       exists: 'Kỳ học này đã tồn tại'
+    },
+    subject: {
+      not_found: 'Không tìm thấy môn học',
+      missing_info: 'Vui lòng điền đầy đủ thông tin',
+      exists: 'Mã môn học này đã tồn tại trong chuyên ngành',
+      excel_error: 'Có lỗi xảy ra khi đọc file Excel'
     },
     student: {
       not_found: 'Không tìm thấy sinh viên',

@@ -8,7 +8,7 @@
       </div>
       <div class="page-top-right" style="display: flex; gap: var(--space-3); align-items: center;">
         <button class="btn btn-secondary" @click="exportExcel">
-          <span class="icon" v-html="downloadIcon"></span> Xuất Excel
+          <span class="icon" v-html="downloadIcon"></span> {{ $t('admin.export_excel') }}
         </button>
         <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_topscore') }}</button>
       </div>
@@ -125,7 +125,7 @@ watch(filterSemester, (newVal) => {
 
 function exportExcel() {
   if (!topScores.value.length) {
-    toast.error('Không có dữ liệu để xuất')
+    toast.error($t('admin.no_export_data'))
     return
   }
   const dataToExport = topScores.value.map(ts => ({

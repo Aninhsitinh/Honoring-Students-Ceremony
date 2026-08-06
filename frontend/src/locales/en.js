@@ -33,7 +33,8 @@ export default {
     view_all: 'View All',
     search_placeholder: 'Search for students, subjects...',
     subject: 'Subject',
-    score: 'Score'
+    score: 'Score',
+    load_more_students: 'Load more students ↓'
   },
   // Footer
   footer: {
@@ -113,6 +114,12 @@ export default {
     eg_subject_name: 'e.g., Media Technologies',
     error_occurred: 'Error occurred',
     delete_subject_confirm: 'Are you sure you want to delete this subject?',
+    delete_students_confirm: 'Are you sure you want to delete {count} selected students?',
+    delete_subjects_confirm: 'Are you sure you want to delete {count} selected subjects?',
+    export_excel: 'Export Excel',
+    import_excel: 'Import Excel',
+    importing: 'Importing...',
+    no_export_data: 'No data to export',
     none_selected: 'None selected',
     // Students
     student_type: 'Type',
@@ -173,6 +180,7 @@ export default {
   error: {
     server: 'Internal Server Error',
     not_found: 'Not Found',
+    invalid_data: 'Invalid data',
     auth: {
       missing_credentials: 'Username and password are required',
       invalid: 'Invalid username or password'
@@ -182,6 +190,12 @@ export default {
       not_found: 'Semester not found',
       no_active: 'No active semester found',
       exists: 'Semester already exists'
+    },
+    subject: {
+      not_found: 'Subject not found',
+      missing_info: 'Please fill in all required fields',
+      exists: 'Subject code already exists in this department',
+      excel_error: 'An error occurred while reading the Excel file'
     },
     student: {
       not_found: 'Student not found',

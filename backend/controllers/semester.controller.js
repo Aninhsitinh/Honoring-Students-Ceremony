@@ -16,7 +16,7 @@ const semesterController = {
     try {
       const semester = await Semester.findById(req.params.id);
       if (!semester) {
-        return res.status(404).json({ message: 'Không tìm thấy kỳ học' });
+        return res.status(404).json({ message: 'error.semester.not_found' });
       }
       res.json(semester);
     } catch (error) {
@@ -65,7 +65,7 @@ const semesterController = {
 
       const semester = await Semester.update(req.params.id, { name, year, slug, description, is_active, bg_image });
       if (!semester) {
-        return res.status(404).json({ message: 'Không tìm thấy kỳ học' });
+        return res.status(404).json({ message: 'error.semester.not_found' });
       }
       res.json(semester);
     } catch (error) {
