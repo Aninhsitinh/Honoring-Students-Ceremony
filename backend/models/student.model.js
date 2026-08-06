@@ -114,6 +114,12 @@ const Student = {
       where: { id: parseInt(id) }
     });
   },
+
+  async deleteMany(ids) {
+    return await prisma.student.deleteMany({
+      where: { id: { in: ids.map(id => parseInt(id)) } }
+    });
+  }
 };
 
 module.exports = Student;

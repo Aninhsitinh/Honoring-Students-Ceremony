@@ -8,6 +8,12 @@
         </select>
       </div>
       <div class="page-top-right" style="display: flex; gap: var(--space-3); align-items: center;">
+        <button class="btn btn-danger" v-if="selectedIds.length > 0" @click="bulkDelete">
+          <span class="icon" v-html="trashIcon"></span> Xóa ({{ selectedIds.length }})
+        </button>
+        <button class="btn btn-secondary" @click="exportExcel">
+          <span class="icon" v-html="downloadIcon"></span> Xuất Excel
+        </button>
         <input type="file" ref="fileInput" @change="handleImport" accept=".xlsx, .xls, .csv" style="display: none">
         <button class="btn btn-secondary" @click="triggerFileInput" :disabled="importing">
           <span class="icon" v-html="uploadIcon"></span>
@@ -29,6 +35,9 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th style="width: 50px; text-align: center;">
+              <input type="checkbox" :checked="allSelected" @change="toggleAll">
+            </th>
             <th>{{ $t('hero.students') }}</th>
             <th>{{ $t('student.id') }}</th>
             <th>{{ $t('student.department') }}</th>
@@ -39,6 +48,9 @@
         </thead>
         <tbody>
           <tr v-for="s in students" :key="s.id">
+            <td style="text-align: center;">
+              <input type="checkbox" :value="s.id" v-model="selectedIds">
+            </td>
             <td>
               <div class="cell-user">
                 <div class="cell-avatar">{{ s.full_name?.charAt(0) }}</div>
@@ -153,7 +165,8 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '../../api/axios'
 import { tSem } from '../../utils/translate'
@@ -164,11 +177,15 @@ import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
 const uploadIcon = icons.upload
+const downloadIcon = icons.download || '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>'
+const trashIcon = icons.trash || '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>'
 const { t } = useI18n()
 const { confirm } = useConfirm()
+const router = useRouter()
+const route = useRoute()
 const students = ref([])
 const semesters = ref([])
-const filterSemester = ref('')
+const filterSemester = ref(route.query.semester || '')
 const showForm = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
@@ -176,6 +193,51 @@ const importing = ref(false)
 const importProgress = ref({ done: 0, total: 0 })
 const avatarFile = ref(null)
 const fileInput = ref(null)
+
+const selectedIds = ref([])
+const allSelected = computed(() => {
+  return students.value.length > 0 && selectedIds.value.length === students.value.length
+})
+
+function toggleAll() {
+  if (allSelected.value) {
+    selectedIds.value = []
+  } else {
+    selectedIds.value = students.value.map(s => s.id)
+  }
+}
+
+async function bulkDelete() {
+  if (selectedIds.value.length === 0) return
+  if (await confirm(`Bạn có chắc chắn muốn xóa ${selectedIds.value.length} sinh viên đã chọn?`)) {
+    try {
+      await api.post('/students/bulk-delete', { ids: selectedIds.value })
+      toast.success('Đã xóa thành công')
+      selectedIds.value = []
+      loadStudents()
+    } catch (e) {
+      toast.error('Lỗi khi xóa hàng loạt')
+    }
+  }
+}
+
+function exportExcel() {
+  if (!students.value.length) {
+    toast.error('Không có dữ liệu để xuất')
+    return
+  }
+  const dataToExport = students.value.map(s => ({
+    'Họ và Tên': s.full_name,
+    'MSSV': s.student_code,
+    'Chuyên ngành': s.department,
+    'Thành tích': s.achievement_type === 'excellent' ? 'Sinh viên xuất sắc' : 'Thủ khoa',
+    'Kỳ học': s.semester_name + ' ' + s.semester_year,
+  }))
+  const ws = XLSX.utils.json_to_sheet(dataToExport)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, "Students")
+  XLSX.writeFile(wb, "Danh_Sach_Sinh_Vien.xlsx")
+}
 
 const form = ref({
   full_name: '', student_code: '', department: '', description: '',
@@ -227,7 +289,15 @@ async function loadStudents() {
 async function loadSemesters() {
   const { data } = await api.get('/semesters')
   semesters.value = data
+  if (!filterSemester.value && data.length > 0) {
+    // If no filter in URL, don't force select, let it show "All" or keep default.
+  }
 }
+
+watch(filterSemester, (newVal) => {
+  router.replace({ query: { ...route.query, semester: newVal || undefined } })
+  loadStudents()
+})
 
 function openForm(student = null) {
   if (student) {

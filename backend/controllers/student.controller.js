@@ -153,16 +153,24 @@ const studentController = {
   async delete(req, res) {
     try {
       const student = await Student.delete(req.params.id);
-      if (!student) {
-        return res.status(404).json({ message: 'error.student.not_found' });
-      }
-      broadcast('students_updated', { action: 'delete' });
-      res.json({ message: 'student.deleted', student });
+      if (!student) return res.status(404).json({ message: 'error.not_found' });
+      broadcast('students');
+      res.json({ message: 'admin.delete_success', student });
     } catch (error) {
       console.error('Delete student error:', error);
       res.status(500).json({ message: 'error.server' });
     }
   },
+
+  bulkDelete: require('../utils/catchAsync')(async (req, res) => {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'Invalid data' });
+    }
+    const result = await Student.deleteMany(ids);
+    broadcast('students');
+    res.json({ message: 'admin.delete_success', count: result.count });
+  })
 };
 
 module.exports = studentController;

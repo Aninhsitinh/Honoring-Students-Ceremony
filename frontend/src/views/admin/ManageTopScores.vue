@@ -1,10 +1,17 @@
 <template>
   <div class="manage-page">
     <div class="page-top">
-      <select v-model="filterSemester" class="form-select" style="max-width: 200px;">
-        <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ tSem(sem.name, $t) }} {{ sem.year }}</option>
-      </select>
-      <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_topscore') }}</button>
+      <div class="page-top-left">
+        <select v-model="filterSemester" class="form-select" style="max-width: 200px;">
+          <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ tSem(sem.name, $t) }} {{ sem.year }}</option>
+        </select>
+      </div>
+      <div class="page-top-right" style="display: flex; gap: var(--space-3); align-items: center;">
+        <button class="btn btn-secondary" @click="exportExcel">
+          <span class="icon" v-html="downloadIcon"></span> Xuất Excel
+        </button>
+        <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_topscore') }}</button>
+      </div>
     </div>
 
     <div class="data-table-wrap glass">
@@ -85,26 +92,54 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
-import api from '../../api/axios'
+import { ref, watch, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import api from '../../api/axios'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
+import * as XLSX from 'xlsx'
 import { toast } from '../../utils/toast'
 import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
+const downloadIcon = icons.download || '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>'
 const { t: $t } = useI18n()
 const { confirm } = useConfirm()
+const router = useRouter()
+const route = useRoute()
 const topScores = ref([])
 const semesters = ref([])
 const allStudents = ref([])
-const filterSemester = ref('')
+const filterSemester = ref(route.query.semester || '')
 const showForm = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
 
 const form = ref({ student_id: '', subject_name: '', score: '', semester_id: '' })
+
+watch(filterSemester, (newVal) => {
+  router.replace({ query: { ...route.query, semester: newVal || undefined } })
+  loadData()
+})
+
+function exportExcel() {
+  if (!topScores.value.length) {
+    toast.error('Không có dữ liệu để xuất')
+    return
+  }
+  const dataToExport = topScores.value.map(ts => ({
+    'Họ và Tên': ts.full_name,
+    'MSSV': ts.student_code,
+    'Môn học': ts.subject_name,
+    'Điểm': ts.score,
+    'Kỳ học': ts.semester_name + ' ' + ts.semester_year,
+  }))
+  const ws = XLSX.utils.json_to_sheet(dataToExport)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, "Top_Scores")
+  XLSX.writeFile(wb, "Danh_Sach_Thu_Khoa.xlsx")
+}
 
 const allSubjects = ref([])
 const availableSubjects = ref([])

@@ -9,7 +9,7 @@ export const useStudentStore = defineStore('student', () => {
   const selectedStudent = ref(null)
 
   async function fetchStudents({ semester_id, achievement_type, search, limit = 50, offset = 0 } = {}) {
-    loading.value = true
+    let timeout = setTimeout(() => { loading.value = true }, 200)
     try {
       const params = {}
       if (semester_id) params.semester_id = semester_id
@@ -22,6 +22,25 @@ export const useStudentStore = defineStore('student', () => {
       students.value = data.students
       total.value = data.total
     } finally {
+      clearTimeout(timeout)
+      loading.value = false
+    }
+  }
+
+  async function appendStudents({ semester_id, achievement_type, search, limit = 50, offset = 0 } = {}) {
+    loading.value = true
+    try {
+      const params = {}
+      if (semester_id) params.semester_id = semester_id
+      if (achievement_type) params.achievement_type = achievement_type
+      if (search) params.search = search
+      params.limit = limit
+      params.offset = offset
+
+      const { data } = await api.get('/students', { params })
+      students.value = [...students.value, ...data.students]
+      total.value = data.total
+    } finally {
       loading.value = false
     }
   }
@@ -32,5 +51,5 @@ export const useStudentStore = defineStore('student', () => {
     return data
   }
 
-  return { students, total, loading, selectedStudent, fetchStudents, fetchStudent }
+  return { students, total, loading, selectedStudent, fetchStudents, appendStudents, fetchStudent }
 })

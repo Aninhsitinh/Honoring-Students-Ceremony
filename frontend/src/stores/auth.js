@@ -23,11 +23,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
-    token.value = null
-    user.value = null
-    localStorage.removeItem('admin_token')
-    localStorage.removeItem('admin_user')
+  async function logout() {
+    try {
+      await api.post('/auth/logout')
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      token.value = null
+      user.value = null
+      localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_user')
+    }
   }
 
   async function fetchMe() {

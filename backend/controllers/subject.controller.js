@@ -77,7 +77,16 @@ const subjectController = {
       console.error('Delete subject error:', error);
       res.status(500).json({ message: 'Lỗi server' });
     }
-  }
+  },
+
+  bulkDelete: require('../utils/catchAsync')(async (req, res) => {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'Invalid data' });
+    }
+    const result = await Subject.deleteMany(ids);
+    res.json({ message: 'Đã xóa các môn học', count: result.count });
+  })
 };
 
 module.exports = subjectController;

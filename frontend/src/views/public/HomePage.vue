@@ -48,7 +48,14 @@
           />
         </div>
 
-        <div v-else class="empty-state">
+        <div v-if="hasMoreStudents" class="view-all-wrap">
+          <button class="btn btn-secondary" @click="loadMoreStudents" :disabled="loadingMore">
+            <span v-if="loadingMore">Đang tải...</span>
+            <span v-else>Xem thêm sinh viên ↓</span>
+          </button>
+        </div>
+
+        <div v-else-if="!loading && students.length === 0" class="empty-state">
           <span class="empty-icon" v-html="inboxIcon"></span>
           <p>{{ $t('home.no_students') }}</p>
         </div>
@@ -164,41 +171,50 @@ const studentStore = useStudentStore()
 const searchQuery = ref('')
 const filterType = ref('all')
 const topScores = ref([])
-const loadingScores = ref(true)
+const loadingScores = ref(false)
 const posts = ref([])
-const loadingPosts = ref(true)
+const loadingPosts = ref(false)
 const modalVisible = ref(false)
 const modalStudent = ref({})
 
 const students = computed(() => studentStore.students)
 const loading = computed(() => studentStore.loading)
 const selectedSemester = computed(() => semesterStore.selectedSemester)
+const hasMoreStudents = computed(() => studentStore.students.length < studentStore.total)
+const loadingMore = ref(false)
+const studentLimit = 12
 
 async function loadData() {
   const semId = selectedSemester.value?.id
   if (!semId) return
 
-  const params = { semester_id: semId }
+  const params = { semester_id: semId, limit: studentLimit, offset: 0 }
   if (filterType.value !== 'all') params.achievement_type = filterType.value
   if (searchQuery.value) params.search = searchQuery.value
 
   studentStore.fetchStudents(params)
 
   // Load top scores with skeleton
-  loadingScores.value = true
+  let scoreTimeout = setTimeout(() => { loadingScores.value = true }, 200)
   try {
     const { data } = await api.get('/top-scores', { params: { semester_id: semId } })
     topScores.value = data
   } catch { topScores.value = [] }
-  finally { loadingScores.value = false }
+  finally { 
+    clearTimeout(scoreTimeout)
+    loadingScores.value = false 
+  }
 
   // Load posts with skeleton
-  loadingPosts.value = true
+  let postTimeout = setTimeout(() => { loadingPosts.value = true }, 200)
   try {
     const { data } = await api.get('/posts', { params: { semester_id: semId, is_published: true, limit: 3 } })
     posts.value = data.posts || []
   } catch { posts.value = [] }
-  finally { loadingPosts.value = false }
+  finally { 
+    clearTimeout(postTimeout)
+    loadingPosts.value = false 
+  }
 }
 
 async function openModal(student) {
@@ -210,6 +226,19 @@ async function openModal(student) {
     modalStudent.value = student
     modalVisible.value = true
   }
+}
+
+async function loadMoreStudents() {
+  if (loadingMore.value || !hasMoreStudents.value) return
+  loadingMore.value = true
+  
+  const semId = selectedSemester.value?.id
+  const params = { semester_id: semId, limit: studentLimit, offset: students.value.length }
+  if (filterType.value !== 'all') params.achievement_type = filterType.value
+  if (searchQuery.value) params.search = searchQuery.value
+
+  await studentStore.appendStudents(params)
+  loadingMore.value = false
 }
 
 // Debounce search

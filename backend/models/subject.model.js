@@ -42,6 +42,12 @@ const Subject = {
     return await prisma.subject.delete({
       where: { id: parseInt(id) }
     });
+  },
+
+  async deleteMany(ids) {
+    return await prisma.subject.deleteMany({
+      where: { id: { in: ids.map(id => parseInt(id)) } }
+    });
   }
 };
 

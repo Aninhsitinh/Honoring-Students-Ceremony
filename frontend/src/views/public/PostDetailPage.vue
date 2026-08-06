@@ -23,7 +23,7 @@
       </div>
 
       <article class="container">
-        <div class="post-body glass" v-html="post.content"></div>
+        <div class="post-body glass" v-html="DOMPurify.sanitize(post.content)"></div>
       </article>
     </template>
 
@@ -48,6 +48,7 @@ import PostDetailSkeleton from '../../components/public/PostDetailSkeleton.vue'
 import { useRoute } from 'vue-router'
 import api from '../../api/axios'
 import { useI18n } from 'vue-i18n'
+import DOMPurify from 'dompurify'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
 import { getImageUrl } from '../../utils/image'

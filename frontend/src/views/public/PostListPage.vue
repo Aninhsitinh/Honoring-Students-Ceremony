@@ -40,15 +40,17 @@ import PostCard from '../../components/public/PostCard.vue'
 import PostCardSkeleton from '../../components/public/PostCardSkeleton.vue'
 
 const posts = ref([])
-const loading = ref(true)
+const loading = ref(false)
 
 onMounted(async () => {
+  let timeout = setTimeout(() => { loading.value = true }, 200)
   try {
     const { data } = await api.get('/posts', { params: { is_published: true, limit: 50 } })
     posts.value = data.posts || []
   } catch (error) {
     console.error('Failed to load posts:', error)
   } finally {
+    clearTimeout(timeout)
     loading.value = false
   }
 })

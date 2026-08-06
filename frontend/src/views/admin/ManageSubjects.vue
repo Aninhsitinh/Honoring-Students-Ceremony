@@ -10,6 +10,9 @@
         </select>
       </div>
       <div class="page-top-right" style="display: flex; gap: var(--space-3); align-items: center;">
+        <button class="btn btn-danger" v-if="selectedIds.length > 0" @click="bulkDelete">
+          <span class="icon" v-html="trashIcon"></span> Xóa ({{ selectedIds.length }})
+        </button>
         <input type="file" ref="fileInput" @change="handleImport" accept=".xlsx, .xls, .csv" style="display: none">
         <button class="btn btn-secondary" @click="triggerFileInput" :disabled="importing">
           <span class="icon" v-html="uploadIcon"></span> {{ importing ? 'Importing...' : 'Import Excel' }}
@@ -22,6 +25,9 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th style="width: 50px; text-align: center;">
+              <input type="checkbox" :checked="allSelected" @change="toggleAll">
+            </th>
             <th>{{ $t('admin.subject_code') }}</th>
             <th>{{ $t('admin.subject_name') }}</th>
             <th>{{ $t('student.department') }}</th>
@@ -30,6 +36,9 @@
         </thead>
         <tbody>
           <tr v-for="sub in filteredSubjects" :key="sub.id">
+            <td style="text-align: center;">
+              <input type="checkbox" :value="sub.id" v-model="selectedIds">
+            </td>
             <td><span class="code-cell">{{ sub.code }}</span></td>
             <td><strong>{{ sub.name }}</strong></td>
             <td>{{ sub.department }}</td>
@@ -86,7 +95,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '../../api/axios'
 import icons from '../../utils/icons'
@@ -96,11 +106,14 @@ import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
 const uploadIcon = icons.upload
+const trashIcon = icons.trash || '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>'
 const { t: $t } = useI18n()
 const { confirm } = useConfirm()
+const router = useRouter()
+const route = useRoute()
 
 const subjects = ref([])
-const filterDepartment = ref('')
+const filterDepartment = ref(route.query.department || '')
 const showForm = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
@@ -108,6 +121,37 @@ const importing = ref(false)
 const fileInput = ref(null)
 
 const form = ref({ code: '', name: '', department: '' })
+
+watch(filterDepartment, (newVal) => {
+  router.replace({ query: { ...route.query, department: newVal || undefined } })
+})
+
+const selectedIds = ref([])
+const allSelected = computed(() => {
+  return filteredSubjects.value.length > 0 && selectedIds.value.length === filteredSubjects.value.length
+})
+
+function toggleAll() {
+  if (allSelected.value) {
+    selectedIds.value = []
+  } else {
+    selectedIds.value = filteredSubjects.value.map(s => s.id)
+  }
+}
+
+async function bulkDelete() {
+  if (selectedIds.value.length === 0) return
+  if (await confirm($t('admin.delete_subject_confirm'))) {
+    try {
+      await api.post('/subjects/bulk-delete', { ids: selectedIds.value })
+      toast.success('Đã xóa thành công')
+      selectedIds.value = []
+      loadSubjects()
+    } catch (e) {
+      toast.error('Lỗi khi xóa hàng loạt')
+    }
+  }
+}
 
 const DEPARTMENTS = {
   GCS: [
