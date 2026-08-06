@@ -5,10 +5,10 @@ import App from './App.vue'
 import './assets/styles/main.css'
 import { i18n } from './i18n'
 
-import { createHead } from '@unhead/vue'
+import { createUnhead } from '@unhead/vue'
 
 const app = createApp(App)
-const head = createHead()
+const head = createUnhead()
 
 app.use(createPinia())
 app.use(router)
