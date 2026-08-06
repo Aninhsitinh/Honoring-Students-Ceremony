@@ -21,7 +21,7 @@
             <td style="max-width: 300px;">
               <span class="post-title-cell">{{ p.title }}</span>
             </td>
-            <td>{{ p.semester_name ? `${p.semester_name} ${p.semester_year}` : '—' }}</td>
+            <td>{{ p.semester_name ? `${tSem(p.semester_name, $t)} ${p.semester_year}` : '—' }}</td>
             <td>
               <span class="badge" :class="p.is_published ? 'badge-green' : 'badge-purple'">
                 {{ p.is_published ? $t('admin.published') : $t('admin.draft') }}
@@ -43,7 +43,7 @@
     <teleport to="body">
       <div v-if="showForm" class="modal-backdrop" @click.self="showForm = false">
         <div class="modal-content glass-strong animate-scale-in" style="max-width: 700px;">
-          <button class="modal-close" @click="showForm = false">✕</button>
+          <button class="modal-close" @click="showForm = false" v-html="xIcon"></button>
           <h3 class="modal-title gradient-text">{{ editingId ? $t('admin.edit_post') : $t('admin.add_post') }}</h3>
 
           <form @submit.prevent="savePost">
@@ -57,7 +57,7 @@
                 <label class="form-label">{{ $t('student.semester') }}</label>
                 <select v-model="form.semester_id" class="form-select">
                   <option value="">{{ $t('admin.none_selected') }}</option>
-                  <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ sem.name }} {{ sem.year }}</option>
+                  <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ tSem(sem.name, $t) }} {{ sem.year }}</option>
                 </select>
               </div>
               <div class="form-group">
@@ -71,13 +71,15 @@
 
             <div class="form-group">
               <label class="form-label">{{ $t('admin.cover_image') }}</label>
+              <div v-if="previewImage || form.thumbnail_url" style="margin-bottom: 12px;">
+                <img :src="previewImage || getImageUrl(form.thumbnail_url)" alt="Cover Preview" style="max-height: 120px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.1); object-fit: cover;" />
+              </div>
               <input type="file" @change="handleFile" accept="image/*" class="form-input" />
             </div>
 
-            <div class="form-group">
-              <label class="form-label">{{ $t('admin.content') }} (HTML) *</label>
-              <textarea v-model="form.content" class="form-textarea" rows="10" required
-                placeholder="<h2>Tiêu đề</h2><p>Nội dung bài viết...</p>"></textarea>
+            <div class="form-group quill-editor-wrapper">
+              <label class="form-label">{{ $t('admin.content') }} *</label>
+              <QuillEditor v-model:content="form.content" contentType="html" theme="snow" />
             </div>
 
             <div class="form-actions">
@@ -95,7 +97,13 @@
 import { ref, onMounted } from 'vue'
 import api from '../../api/axios'
 import { useI18n } from 'vue-i18n'
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { tSem } from '../../utils/translate'
+import icons from '../../utils/icons'
+import { getImageUrl } from '../../utils/image'
 
+const xIcon = icons.x
 const { t: $t } = useI18n()
 const posts = ref([])
 const semesters = ref([])
@@ -103,8 +111,9 @@ const showForm = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
 const thumbnailFile = ref(null)
+const previewImage = ref(null)
 
-const form = ref({ title: '', content: '', semester_id: '', is_published: false })
+const form = ref({ title: '', content: '', semester_id: '', is_published: false, thumbnail_url: null })
 
 async function loadPosts() {
   const { data } = await api.get('/posts', { params: { limit: 100 } })
@@ -124,16 +133,25 @@ function formatDate(d) {
 function openForm(post = null) {
   if (post) {
     editingId.value = post.id
-    form.value = { title: post.title, content: post.content, semester_id: post.semester_id || '', is_published: post.is_published }
+    form.value = { title: post.title, content: post.content, semester_id: post.semester_id || '', is_published: post.is_published, thumbnail_url: post.thumbnail_url }
   } else {
     editingId.value = null
-    form.value = { title: '', content: '', semester_id: '', is_published: false }
+    form.value = { title: '', content: '', semester_id: '', is_published: false, thumbnail_url: null }
   }
   thumbnailFile.value = null
+  previewImage.value = null
   showForm.value = true
 }
 
-function handleFile(e) { thumbnailFile.value = e.target.files[0] }
+function handleFile(e) {
+  const file = e.target.files[0]
+  thumbnailFile.value = file
+  if (file) {
+    previewImage.value = URL.createObjectURL(file)
+  } else {
+    previewImage.value = null
+  }
+}
 
 async function savePost() {
   saving.value = true
@@ -175,8 +193,40 @@ onMounted(() => { loadSemesters(); loadPosts() })
 .actions { display: flex; gap: var(--space-2); }
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: var(--z-modal-backdrop); display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
 .modal-content { position: relative; width: 100%; max-height: 90vh; overflow-y: auto; border-radius: var(--radius-xl); padding: var(--space-8); }
-.modal-close { position: absolute; top: var(--space-4); right: var(--space-4); width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1); color: var(--color-text-secondary); font-size: var(--text-lg); display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
+.modal-close { position: absolute; top: var(--space-4); right: var(--space-4); width: 36px; height: 36px; border-radius: 50%; background: var(--color-bg-card); color: var(--color-text-secondary); font-size: var(--text-lg); display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-border); cursor: pointer; }
+.modal-close:hover { background: var(--color-bg-card-hover); color: var(--color-text-primary); }
 .modal-title { font-size: var(--text-xl); font-weight: 800; margin-bottom: var(--space-6); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
 .form-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-6); }
+
+/* Quill Editor Dark Theme Overrides */
+.quill-editor-wrapper {
+  margin-bottom: var(--space-4);
+}
+:deep(.ql-toolbar.ql-snow) {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+:deep(.ql-container.ql-snow) {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--color-text-primary);
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  min-height: 250px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+}
+:deep(.ql-toolbar.ql-snow .ql-stroke) { stroke: var(--color-text-primary); }
+:deep(.ql-toolbar.ql-snow .ql-fill) { fill: var(--color-text-primary); }
+:deep(.ql-toolbar.ql-snow .ql-picker) { color: var(--color-text-primary); }
+:deep(.ql-snow .ql-picker-options) {
+  background-color: var(--color-bg-primary);
+  border-color: rgba(255,255,255,0.2);
+}
+:deep(.ql-snow .ql-picker-item:hover), :deep(.ql-snow .ql-picker-label:hover) {
+  color: var(--color-primary);
+}
 </style>

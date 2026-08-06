@@ -9,50 +9,78 @@
 
     <nav class="sidebar-nav">
       <router-link to="/admin" class="nav-item" exact-active-class="active" @click="close">
-        <span class="nav-icon">📊</span>
+        <span class="nav-icon" v-html="chartBarIcon"></span>
         <span>{{ $t('admin.dashboard') }}</span>
       </router-link>
       <router-link to="/admin/students" class="nav-item" active-class="active" @click="close">
-        <span class="nav-icon">👨‍🎓</span>
+        <span class="nav-icon" v-html="graduationCapIcon"></span>
         <span>{{ $t('admin.manage_students') }}</span>
       </router-link>
       <router-link to="/admin/top-scores" class="nav-item" active-class="active" @click="close">
-        <span class="nav-icon">⭐</span>
+        <span class="nav-icon" v-html="starIcon"></span>
         <span>{{ $t('admin.manage_scores') }}</span>
       </router-link>
       <router-link to="/admin/posts" class="nav-item" active-class="active" @click="close">
-        <span class="nav-icon">📝</span>
+        <span class="nav-icon" v-html="fileTextIcon"></span>
         <span>{{ $t('admin.manage_posts') }}</span>
       </router-link>
       <router-link to="/admin/semesters" class="nav-item" active-class="active" @click="close">
-        <span class="nav-icon">📅</span>
+        <span class="nav-icon" v-html="calendarIcon"></span>
         <span>{{ $t('admin.manage_semesters') }}</span>
+      </router-link>
+      <router-link to="/admin/subjects" class="nav-item" active-class="active" @click="close">
+        <span class="nav-icon" v-html="clipboardIcon"></span>
+        <span>{{ $t('admin.manage_subjects') || 'Manage Subjects' }}</span>
       </router-link>
     </nav>
 
     <div class="sidebar-footer">
-      <router-link to="/" class="nav-item" target="_blank">
-        <span class="nav-icon">🌐</span>
-        <span>{{ $t('nav.home') }}</span>
-      </router-link>
+      <div class="admin-user-info">
+        <span class="nav-icon" v-html="userIcon"></span>
+        <span class="user-name">{{ user?.username }}</span>
+      </div>
+      <button class="btn btn-secondary btn-sm logout-btn" @click="handleLogout">
+        {{ $t('nav.logout') }}
+      </button>
     </div>
   </aside>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
 import { useDark } from '@vueuse/core'
+import icons from '../../utils/icons'
 import logoLight from '../../assets/logo_light-Cvl1LvYU.png'
 import logoDark from '../../assets/logo_dark-nY9adEwT.png'
 
+const authStore = useAuthStore()
+const router = useRouter()
+const user = computed(() => authStore.user)
+const userIcon = icons.user
+
 const isDark = useDark({ valueDark: 'dark', valueLight: 'light' })
 const logoSrc = computed(() => isDark.value ? logoDark : logoLight)
+
+const chartBarIcon = icons.chartBar
+const graduationCapIcon = icons.graduationCap
+const starIcon = icons.star
+const fileTextIcon = icons.fileText
+const calendarIcon = icons.calendar
+const globeIcon = icons.globe
+const clipboardIcon = icons.clipboard
 
 const isOpen = ref(false)
 
 function close() {
   isOpen.value = false
   document.querySelector('.admin-sidebar')?.classList.remove('open')
+}
+
+function handleLogout() {
+  authStore.logout()
+  router.push({ name: 'AdminLogin' })
 }
 </script>
 
@@ -122,9 +150,10 @@ function close() {
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
-  color: #818cf8;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(0, 94, 184, 0.15);
+  color: #3ABFF0;
+  border: none;
+  border-left: 3px solid #3ADDC2;
 }
 
 .nav-icon {
@@ -136,15 +165,26 @@ function close() {
 .sidebar-footer {
   padding: var(--space-4) var(--space-3);
   border-top: 1px solid var(--admin-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-@media (max-width: 768px) {
-  .admin-sidebar {
-    transform: translateX(-100%);
-  }
-
-  .admin-sidebar.open {
-    transform: translateX(0);
-  }
+.admin-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  padding: 0 var(--space-2);
 }
+
+.user-name {
+  font-size: var(--text-base);
+}
+
+.logout-btn {
+  width: 100%;
+}
+
 </style>

@@ -2,7 +2,7 @@
   <div class="login-page">
     <div class="login-container animate-scale-in">
       <div class="login-header">
-        <span class="login-icon">🔐</span>
+        <span class="login-icon" v-html="lockIcon"></span>
         <h1 class="gradient-text">{{ $t('admin.login_title') }}</h1>
         <p>{{ $t('admin.login_desc') }}</p>
       </div>
@@ -48,6 +48,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import icons from '../../utils/icons'
+
+const lockIcon = icons.lock
 
 const router = useRouter()
 const authStore = useAuthStore()

@@ -13,8 +13,6 @@
           <button class="lang-btn" @click="toggleLanguage">
             {{ currentLang === 'vi' ? 'EN' : 'VI' }}
           </button>
-          <span class="admin-user">👤 {{ user?.username }}</span>
-          <button class="btn btn-secondary btn-sm" @click="handleLogout">{{ $t('nav.logout') }}</button>
         </div>
       </header>
       <div class="admin-content">
@@ -30,17 +28,13 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '../stores/auth'
 import AdminSidebar from '../components/admin/AdminSidebar.vue'
 
 const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
 const { t: $t, locale } = useI18n()
 
-const user = computed(() => authStore.user)
 const currentTitle = computed(() => route.meta.title ? $t(route.meta.title) : $t('admin.dashboard'))
 const currentLang = computed(() => locale.value)
 
@@ -51,11 +45,6 @@ function toggleLanguage() {
 
 function toggleSidebar() {
   document.querySelector('.admin-sidebar')?.classList.toggle('open')
-}
-
-function handleLogout() {
-  authStore.logout()
-  router.push({ name: 'AdminLogin' })
 }
 </script>
 
@@ -78,7 +67,7 @@ function handleLogout() {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-6);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--color-bg-glass);
   border-bottom: 1px solid var(--admin-border);
   backdrop-filter: blur(10px);
   position: sticky;
@@ -99,8 +88,8 @@ function handleLogout() {
 }
 
 .lang-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   color: var(--color-text-primary);
   width: 32px;
   height: 32px;
@@ -111,12 +100,13 @@ function handleLogout() {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition-normal);
+  transition: all var(--transition-fast);
 }
 
 .lang-btn:hover {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--color-bg-card-hover);
+  border-color: var(--color-border-hover);
+  color: var(--color-text-accent);
   transform: translateY(-2px);
 }
 
@@ -156,17 +146,4 @@ function handleLogout() {
   transition: var(--transition-fast);
 }
 
-@media (max-width: 768px) {
-  .admin-main {
-    margin-left: 0;
-  }
-
-  .mobile-menu-btn {
-    display: flex;
-  }
-
-  .admin-content {
-    padding: var(--space-4);
-  }
-}
 </style>

@@ -23,6 +23,7 @@ app.use('/api/semesters', require('./routes/semester.routes'));
 app.use('/api/students', require('./routes/student.routes'));
 app.use('/api/top-scores', require('./routes/topScore.routes'));
 app.use('/api/posts', require('./routes/post.routes'));
+app.use('/api/subjects', require('./routes/subject.routes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

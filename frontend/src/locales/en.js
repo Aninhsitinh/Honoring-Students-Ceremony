@@ -7,7 +7,8 @@ export default {
     login: 'Login',
     dashboard: 'Dashboard',
     logout: 'Logout',
-    semesters: 'Semesters'
+    semesters: 'Semesters',
+    graduation: 'Graduation'
   },
   // Hero Section
   hero: {
@@ -37,18 +38,22 @@ export default {
   // Footer
   footer: {
     description: 'FPT Greenwich Vietnam is an international educational environment, aiming to comprehensively develop students both in knowledge and skills.',
-    links: 'Quick Links',
+    links: 'Links',
     contact: 'Contact',
-    rights: 'All rights reserved.'
+    rights: 'All rights reserved by FPT Greenwich Vietnam.',
+    follow_us: 'Follow Us'
   },
   // Posts
   post: {
     news_events: 'News & Events',
+    page_desc: 'Stay updated with honoring events, outstanding activities, and the latest news',
+    loading: 'Loading...',
     no_news: 'No news found',
     read_more: 'Read more',
     back: 'Back',
     share: 'Share',
-    published_on: 'Published on'
+    published_on: 'Published on',
+    by: 'by'
   },
   // Student Modal
   student: {
@@ -56,8 +61,8 @@ export default {
     subject: 'Subject',
     score: 'Score',
     close: 'Close',
-    excellent: '🏆 Excellent Student',
-    high_score: '⭐ High Score',
+    excellent: 'Excellent Student',
+    high_score: 'High Score',
     id: 'ID',
     department: 'Department',
     semester: 'Semester',
@@ -71,6 +76,7 @@ export default {
     manage_students: 'Manage Students',
     manage_scores: 'Manage Top Scores',
     manage_posts: 'Manage Posts',
+    manage_subjects: 'Manage Subjects',
     login_title: 'Admin Login',
     login_desc: 'Login to manage the system',
     username: 'Username',
@@ -95,6 +101,18 @@ export default {
     type_subject: 'e.g., Machine Learning',
     error_save: 'Error while saving',
     error_delete: 'Error while deleting',
+    save_success: 'Save successful!',
+    delete_success: 'Delete successful!',
+    all_departments: 'All Departments',
+    add_subject: 'Add Subject',
+    subject_code: 'Subject Code',
+    subject_name: 'Subject Name',
+    no_data: 'No data available',
+    edit_subject: 'Edit Subject',
+    eg_subject_code: 'e.g., CINE1078',
+    eg_subject_name: 'e.g., Media Technologies',
+    error_occurred: 'Error occurred',
+    delete_subject_confirm: 'Are you sure you want to delete this subject?',
     none_selected: 'None selected',
     // Students
     student_type: 'Type',
@@ -139,9 +157,9 @@ export default {
     no_desc: 'No description',
     color_bg: 'Theme color:',
     delete_sem_confirm: 'Deleting this semester will remove all related students and top scores. Continue?',
-    sem_spring: 'Spring Semester',
-    sem_summer: 'Summer Semester',
-    sem_fall: 'Fall Semester',
+    sem_spring: 'Spring',
+    sem_summer: 'Summer',
+    sem_fall: 'Fall',
     // Dashboard
     overview: 'Overview',
     total_students: 'Total Students',

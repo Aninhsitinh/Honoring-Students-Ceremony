@@ -5,15 +5,22 @@
         <div class="brand-logo-circle">
           <img :src="logoSrc" alt="Logo" class="brand-logo" />
         </div>
-        <span class="brand-text gradient-text">Honoring Students</span>
+        <span class="brand-text gradient-text">Greenwich Honoring Students</span>
       </router-link>
       
       <div class="navbar-links" :class="{ open: menuOpen }">
-        <router-link to="/" class="nav-link" @click="menuOpen = false">{{ $t('nav.home') }}</router-link>
-        <router-link to="/tin-tuc" class="nav-link" @click="menuOpen = false">{{ $t('nav.news') }}</router-link>
+        <router-link to="/" class="nav-link" @click="menuOpen = false">
+          <span class="nav-icon" v-html="icons.home"></span>
+          <span class="nav-text">{{ $t('nav.home') }}</span>
+        </router-link>
+        <router-link to="/news-and-events" class="nav-link" @click="menuOpen = false">
+          <span class="nav-icon" v-html="icons.newspaper"></span>
+          <span class="nav-text">{{ $t('nav.news') }}</span>
+        </router-link>
         <div class="nav-link semester-selector">
           <button class="semester-btn" @click.stop="showSemesters = !showSemesters">
-            {{ $t('nav.semesters') }} ▾
+            <span class="nav-icon" v-html="icons.calendar"></span>
+            <span class="nav-text">{{ $t('nav.semesters') }} ▾</span>
           </button>
           <div class="semester-dropdown" v-show="showSemesters">
             <button
@@ -23,14 +30,15 @@
               :class="{ active: selectedSemester?.id === sem.id }"
               @click="selectSem(sem)"
             >
-              {{ sem.name }} {{ sem.year }}
+              {{ tSem(sem.name, $t) }} {{ sem.year }}
               <span v-if="sem.is_active" class="badge badge-gold" style="margin-left: 8px;">{{ $t('admin.active') }}</span>
             </button>
           </div>
         </div>
         <div class="nav-link semester-selector">
           <button class="semester-btn" @click.stop="showGraduation = !showGraduation; showSemesters = false">
-            Graduation ▾
+            <span class="nav-icon" v-html="icons.graduationCap"></span>
+            <span class="nav-text">{{ $t('nav.graduation') }} ▾</span>
           </button>
           <div class="semester-dropdown" v-show="showGraduation">
             <a href="https://greenwich-ceremony-hrae.vercel.app/" target="_blank" class="semester-option">
@@ -45,12 +53,8 @@
           {{ locale === 'en' ? 'EN' : 'VI' }}
         </button>
         <button class="theme-toggle" @click="toggleTheme()" title="Toggle Theme">
-          <span v-if="isDark" class="icon-moon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-          </span>
-          <span v-else class="icon-sun">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-          </span>
+          <span v-if="isDark" class="icon-moon" v-html="moonIcon"></span>
+          <span v-else class="icon-sun" v-html="sunIcon"></span>
         </button>
         <button class="hamburger" @click="menuOpen = !menuOpen" :class="{ open: menuOpen }">
           <span></span><span></span><span></span>
@@ -64,9 +68,14 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSemesterStore } from '../../stores/semester'
+import { tSem } from '../../utils/translate'
 import { useDark, useToggle } from '@vueuse/core'
+import icons from '../../utils/icons'
 import logoLight from '../../assets/logo_light-Cvl1LvYU.png'
 import logoDark from '../../assets/logo_dark-nY9adEwT.png'
+
+const moonIcon = icons.moon
+const sunIcon = icons.sun
 
 const isDark = useDark({ valueDark: 'dark', valueLight: 'light' })
 const toggleTheme = useToggle(isDark)
@@ -293,33 +302,4 @@ onUnmounted(() => {
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-@media (max-width: 860px) {
-  .navbar-links {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--color-bg-secondary);
-    flex-direction: column;
-    padding: var(--space-4);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    pointer-events: auto;
-  }
-
-  .navbar-links.open {
-    display: flex;
-  }
-
-  .semester-dropdown {
-    position: static;
-    transform: none;
-    margin-top: var(--space-2);
-  }
-
-  .hamburger {
-    display: flex;
-  }
-}
 </style>

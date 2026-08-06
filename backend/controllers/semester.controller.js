@@ -40,16 +40,16 @@ const semesterController = {
 
   async create(req, res) {
     try {
-      const { name, year, description, is_active, theme_color } = req.body;
+      const { name, year, description, is_active } = req.body;
       const slug = slugify(`${name}-${year}`, { lower: true, locale: 'vi' });
-      const bg_image = req.file ? `/uploads/${req.file.filename}` : null;
+      const bg_image = req.file ? req.file.path : null;
 
       const existing = await Semester.findBySlug(slug);
       if (existing) {
         return res.status(400).json({ message: 'error.semester.exists' });
       }
 
-      const semester = await Semester.create({ name, year, slug, description, is_active, theme_color, bg_image });
+      const semester = await Semester.create({ name, year, slug, description, is_active, bg_image });
       res.status(201).json(semester);
     } catch (error) {
       console.error('Create semester error:', error);
@@ -59,11 +59,11 @@ const semesterController = {
 
   async update(req, res) {
     try {
-      const { name, year, description, is_active, theme_color } = req.body;
+      const { name, year, description, is_active } = req.body;
       const slug = slugify(`${name}-${year}`, { lower: true, locale: 'vi' });
-      const bg_image = req.file ? `/uploads/${req.file.filename}` : req.body.bg_image;
+      const bg_image = req.file ? req.file.path : req.body.bg_image;
 
-      const semester = await Semester.update(req.params.id, { name, year, slug, description, is_active, theme_color, bg_image });
+      const semester = await Semester.update(req.params.id, { name, year, slug, description, is_active, bg_image });
       if (!semester) {
         return res.status(404).json({ message: 'Không tìm thấy kỳ học' });
       }

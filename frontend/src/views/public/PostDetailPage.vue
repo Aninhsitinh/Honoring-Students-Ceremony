@@ -5,16 +5,15 @@
     </div>
 
     <template v-else-if="post">
-      <div class="post-hero" :style="{ backgroundImage: post.thumbnail_url ? `url(${apiBase}${post.thumbnail_url})` : 'none' }">
-        <div class="post-hero-overlay">
+      <div class="post-hero" 
+           :style="{ backgroundImage: post.thumbnail_url ? `url(${getImageUrl(post.thumbnail_url)})` : 'none', cursor: post.thumbnail_url ? 'zoom-in' : 'default' }"
+           @click="post.thumbnail_url ? showLightbox = true : null">
+        <div class="post-hero-overlay" @click.stop="post.thumbnail_url ? showLightbox = true : null">
           <div class="container">
-            <button class="btn btn-secondary btn-sm" @click="$router.back()">
-              ← {{ $t('post.back') }}
-            </button>
             <div class="post-hero-content animate-fade-in-up">
               <div class="post-meta">
-                <span v-if="post.semester_name" class="badge badge-gold">
-                  {{ post.semester_name }} {{ post.semester_year }}
+                <span v-if="post.semester_name" class="badge badge-blue">
+                  {{ tSem(post.semester_name, $t) }} {{ post.semester_year }}
                 </span>
                 <span class="post-date">{{ formatDate(post.published_at || post.created_at) }}</span>
                 <span class="post-author" v-if="post.author_name">{{ $t('post.by') }} {{ post.author_name }}</span>
@@ -31,10 +30,17 @@
     </template>
 
     <div v-else class="empty-state">
-      <span class="empty-icon">🔍</span>
+      <span class="empty-icon" v-html="searchIcon"></span>
       <p>{{ $t('error.post.not_found') }}</p>
-      <router-link to="/tin-tuc" class="btn btn-secondary">← {{ $t('post.back') }}</router-link>
+      <router-link to="/news-and-events" class="btn btn-secondary"><span class="icon" v-html="arrowLeftIcon"></span> {{ $t('post.back') }}</router-link>
     </div>
+
+    <teleport to="body">
+      <div v-if="showLightbox && post && post.thumbnail_url" class="lightbox-overlay" @click="showLightbox = false">
+        <button class="lightbox-close" @click="showLightbox = false" v-html="xIcon"></button>
+        <img :src="getImageUrl(post.thumbnail_url)" class="lightbox-img" @click.stop />
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -42,12 +48,19 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../../api/axios'
+import { useI18n } from 'vue-i18n'
+import { tSem } from '../../utils/translate'
+import icons from '../../utils/icons'
+import { getImageUrl } from '../../utils/image'
 
+const { t } = useI18n()
+const arrowLeftIcon = icons.arrowLeft
+const searchIcon = icons.search
+const xIcon = icons.x
 const route = useRoute()
 const post = ref(null)
 const loading = ref(true)
-
-const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'
+const showLightbox = ref(false)
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
@@ -60,7 +73,7 @@ onMounted(async () => {
   try {
     const { data } = await api.get(`/posts/slug/${route.params.slug}`)
     post.value = data
-    document.title = `${data.title} | Honoring Students`
+    document.title = `${data.title} | Greenwich Honoring Students`
   } catch (error) {
     console.error('Failed to load post:', error)
   } finally {
@@ -80,7 +93,7 @@ onMounted(async () => {
 
 .post-hero-overlay {
   min-height: 400px;
-  background: linear-gradient(to bottom, rgba(10, 10, 26, 0.3), rgba(10, 10, 26, 0.95));
+  background: linear-gradient(to bottom, rgba(10, 10, 26, 0) 0%, rgba(10, 10, 26, 0.2) 50%, rgba(10, 10, 26, 0.85) 100%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -110,13 +123,14 @@ onMounted(async () => {
 }
 
 .post-date {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-size: var(--text-sm);
 }
 
 .post-author {
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
+  opacity: 0.8;
 }
 
 .post-title {
@@ -124,6 +138,8 @@ onMounted(async () => {
   font-weight: 800;
   line-height: 1.3;
   max-width: 800px;
+  color: var(--color-text-white);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .post-body {
@@ -155,8 +171,62 @@ onMounted(async () => {
 }
 
 .post-body :deep(ul), .post-body :deep(ol) {
-  margin: var(--space-4) 0;
-  padding-left: var(--space-6);
+  margin-left: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.post-body :deep(img) {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  margin: var(--space-6) 0;
+}
+
+/* Lightbox Styles */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  backdrop-filter: blur(5px);
+  cursor: zoom-out;
+}
+
+.lightbox-img {
+  max-width: 90%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  cursor: default;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: var(--space-6);
+  right: var(--space-6);
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.7;
+}
+
+.lightbox-close:hover {
+  transform: scale(1.1);
+  opacity: 1;
 }
 
 .post-body :deep(li) {
@@ -197,8 +267,4 @@ onMounted(async () => {
   margin-bottom: var(--space-4);
 }
 
-@media (max-width: 768px) {
-  .post-title { font-size: var(--text-2xl); }
-  .post-body { padding: var(--space-5); margin: var(--space-6) auto; }
-}
 </style>

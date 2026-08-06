@@ -54,7 +54,7 @@ const postController = {
       let thumbnail_url = req.body.thumbnail_url || null;
 
       if (req.file) {
-        thumbnail_url = `/uploads/${req.file.filename}`;
+        thumbnail_url = req.file.path;
       }
 
       const baseSlug = slugify(title, { lower: true, locale: 'vi', strict: true });
@@ -82,7 +82,7 @@ const postController = {
       let thumbnail_url = req.body.thumbnail_url || null;
 
       if (req.file) {
-        thumbnail_url = `/uploads/${req.file.filename}`;
+        thumbnail_url = req.file.path;
       }
 
       if (!thumbnail_url) {

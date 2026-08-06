@@ -1,6 +1,6 @@
 <template>
   <div class="search-bar glass">
-    <span class="search-icon">🔍</span>
+    <span class="search-icon" v-html="searchIcon"></span>
     <input
       type="text"
       class="search-input"
@@ -8,15 +8,20 @@
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
     />
-    <button v-if="modelValue" class="search-clear" @click="$emit('update:modelValue', '')">✕</button>
+    <button v-if="modelValue" class="search-clear" @click="$emit('update:modelValue', '')" v-html="xIcon"></button>
   </div>
 </template>
 
 <script setup>
+import icons from '../../utils/icons'
+
 defineProps({
   modelValue: { type: String, default: '' },
 })
 defineEmits(['update:modelValue'])
+
+const searchIcon = icons.search
+const xIcon = icons.x
 </script>
 
 <style scoped>

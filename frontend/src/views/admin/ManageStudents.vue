@@ -4,10 +4,16 @@
       <div class="page-top-left">
         <select v-model="filterSemester" class="form-select" style="max-width: 200px;">
           <option value="">{{ $t('admin.all_semesters') }}</option>
-          <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ sem.name }} {{ sem.year }}</option>
+          <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ tSem(sem.name, $t) }} {{ sem.year }}</option>
         </select>
       </div>
-      <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_student') }}</button>
+      <div class="page-top-right" style="display: flex; gap: var(--space-3); align-items: center;">
+        <input type="file" ref="fileInput" @change="handleImport" accept=".xlsx, .xls, .csv" style="display: none">
+        <button class="btn btn-secondary" @click="triggerFileInput" :disabled="importing">
+          <span class="icon" v-html="uploadIcon"></span> {{ importing ? 'Importing...' : 'Import Excel' }}
+        </button>
+        <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_student') }}</button>
+      </div>
     </div>
 
     <div class="data-table-wrap glass">
@@ -37,7 +43,7 @@
                 {{ s.achievement_type === 'excellent' ? $t('admin.type_excellent') : $t('admin.type_topscore') }}
               </span>
             </td>
-            <td>{{ s.semester_name }} {{ s.semester_year }}</td>
+            <td>{{ tSem(s.semester_name, $t) }} {{ s.semester_year }}</td>
             <td>
               <div class="actions">
                 <button class="btn btn-secondary btn-sm" @click="openForm(s)">{{ $t('admin.edit') }}</button>
@@ -53,7 +59,7 @@
     <teleport to="body">
       <div v-if="showForm" class="modal-backdrop" @click.self="showForm = false">
         <div class="modal-content glass-strong animate-scale-in" style="max-width: 600px;">
-          <button class="modal-close" @click="showForm = false">✕</button>
+          <button class="modal-close" @click="showForm = false" v-html="xIcon"></button>
           <h3 class="modal-title gradient-text">{{ editingId ? $t('admin.edit_student') : $t('admin.add_student') }}</h3>
 
           <form @submit.prevent="saveStudent">
@@ -105,7 +111,7 @@
               <div class="form-group">
                 <label class="form-label">{{ $t('student.semester') }} *</label>
                 <select v-model="form.semester_id" class="form-select" required>
-                  <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ sem.name }} {{ sem.year }}</option>
+                  <option v-for="sem in semesters" :key="sem.id" :value="sem.id">{{ tSem(sem.name, $t) }} {{ sem.year }}</option>
                 </select>
               </div>
               <div class="form-group">
@@ -141,7 +147,13 @@
 import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '../../api/axios'
+import { tSem } from '../../utils/translate'
+import icons from '../../utils/icons'
+import * as XLSX from 'xlsx'
+import { toast } from '../../utils/toast'
 
+const xIcon = icons.x
+const uploadIcon = icons.upload
 const { t } = useI18n()
 const students = ref([])
 const semesters = ref([])
@@ -149,7 +161,9 @@ const filterSemester = ref('')
 const showForm = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
+const importing = ref(false)
 const avatarFile = ref(null)
+const fileInput = ref(null)
 
 const form = ref({
   full_name: '', student_code: '', department: '', description: '',
@@ -224,7 +238,7 @@ function handleFile(e) {
 
 async function saveStudent() {
   if (!validateStudentCode(form.value.student_code, form.value.department)) {
-    alert(t('error.student.invalid_code'))
+    toast.error(t('error.student.invalid_code'))
     return
   }
 
@@ -242,9 +256,10 @@ async function saveStudent() {
       await api.post('/students', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
     }
     showForm.value = false
+    toast.success(t('admin.save_success') || 'Save successful!')
     loadStudents()
   } catch (err) {
-    alert(err.response?.data?.message || t('admin.error_save'))
+    toast.error(err.response?.data?.message || t('admin.error_save'))
   } finally {
     saving.value = false
   }
@@ -254,9 +269,107 @@ async function deleteStudent(id) {
   if (!confirm(t('admin.confirm_delete'))) return
   try {
     await api.delete(`/students/${id}`)
+    toast.success(t('admin.delete_success') || 'Delete successful!')
     loadStudents()
   } catch (err) {
-    alert(t('admin.error_delete'))
+    toast.error(t('admin.error_delete'))
+  }
+}
+
+function triggerFileInput() {
+  if (!filterSemester.value) {
+    toast.warning('Please select a specific semester from the filter before importing!')
+    return
+  }
+  if (fileInput.value) fileInput.value.click()
+}
+
+async function handleImport(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  importing.value = true
+  try {
+    const data = await file.arrayBuffer()
+    const workbook = XLSX.read(data)
+    const sheetName = workbook.SheetNames[0]
+    const worksheet = workbook.Sheets[sheetName]
+    const json = XLSX.utils.sheet_to_json(worksheet)
+
+    if (json.length === 0) {
+      toast.warning('Excel file is empty!')
+      return
+    }
+
+    let successCount = 0
+    let failCount = 0
+    const semesterId = filterSemester.value
+
+    for (const row of json) {
+      try {
+        // Map Excel columns to payload
+        // Expected columns: "Họ và tên", "Mã sinh viên", "Chuyên ngành", "Loại danh hiệu", "Mô tả", "Môn học", "Điểm"
+        const fullName = (row['Họ và tên'] || row['full_name'] || '').toString().trim()
+        const studentCode = (row['Mã sinh viên'] || row['student_code'] || '').toString().trim()
+        let department = (row['Chuyên ngành'] || row['department'] || '').toString().trim()
+        let achievementType = (row['Loại danh hiệu'] || row['achievement_type'] || 'excellent').toString().trim()
+        const description = (row['Mô tả'] || row['description'] || '').toString().trim()
+        const subjectName = (row['Môn học'] || row['subject_name'] || '').toString().trim()
+        const score = row['Điểm'] || row['score']
+
+        if (!department && studentCode) {
+          const prefix = studentCode.substring(0, 3).toUpperCase();
+          if (prefix === 'GCS') department = 'Công nghệ thông tin';
+          else if (prefix === 'GBS') department = 'Quản trị Kinh doanh';
+          else if (prefix === 'GDS') department = 'Thiết kế đồ họa & kỹ thuật số';
+        }
+
+        if (!fullName || !studentCode || !department) {
+          failCount++
+          continue
+        }
+
+        // Normalize achievement type
+        if (achievementType.toLowerCase() === 'top score' || achievementType.toLowerCase() === 'top_score') {
+          achievementType = 'top_score'
+        } else {
+          achievementType = 'excellent'
+        }
+
+        const fd = new FormData()
+        fd.append('full_name', fullName)
+        fd.append('student_code', studentCode)
+        fd.append('department', department)
+        fd.append('achievement_type', achievementType)
+        fd.append('description', description)
+        fd.append('semester_id', semesterId)
+
+        const response = await api.post('/students', fd)
+        const newStudent = response.data
+
+        // If subject and score are provided, add to top-scores
+        if (subjectName && score) {
+          await api.post('/top-scores', {
+            student_id: newStudent.id,
+            subject_name: subjectName,
+            score: score,
+            semester_id: semesterId
+          })
+        }
+
+        successCount++
+      } catch (err) {
+        failCount++
+      }
+    }
+
+    toast.success(`Import completed! Success: ${successCount}. Failed: ${failCount}.`)
+    loadStudents()
+  } catch (err) {
+    toast.error('An error occurred while reading the Excel file.')
+  } finally {
+    importing.value = false
+    event.target.value = '' // reset file input
   }
 }
 
@@ -358,17 +471,22 @@ onMounted(() => { loadSemesters(); loadStudents() })
   overflow-y: auto;
   border-radius: var(--radius-xl);
   padding: var(--space-8);
+  background: var(--color-bg-card);
 }
 
 .modal-close {
   position: absolute; top: var(--space-4); right: var(--space-4);
   width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(255,255,255,0.1); color: var(--color-text-secondary);
-  font-size: var(--text-lg); display: flex; align-items: center; justify-content: center;
-  transition: all var(--transition-fast); border: none; cursor: pointer;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: var(--text-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
 }
-
-.modal-close:hover { background: rgba(255,255,255,0.2); }
+.modal-close:hover { background: var(--color-bg-card-hover); color: var(--color-text-primary); }
 
 .modal-title {
   font-size: var(--text-xl);
@@ -389,7 +507,4 @@ onMounted(() => { loadSemesters(); loadStudents() })
   margin-top: var(--space-6);
 }
 
-@media (max-width: 768px) {
-  .form-row { grid-template-columns: 1fr; }
-}
 </style>

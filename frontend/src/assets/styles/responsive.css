@@ -1,0 +1,362 @@
+/* ==========================================================================
+   Global Responsive Configuration (Mobile & Tablet)
+   ========================================================================== */
+
+/* ─── Global Base ─── */
+@media (max-width: 768px) {
+  :root {
+    --container-padding: var(--space-4) !important;
+  }
+
+  .section {
+    padding: var(--space-12) 0 !important;
+  }
+
+  .section-title {
+    font-size: clamp(1.25rem, 4vw, 1.5rem) !important;
+  }
+
+  .section-subtitle {
+    font-size: clamp(0.875rem, 2vw, 1rem) !important;
+  }
+
+  /* Utility / Helpers */
+  .page-title {
+    font-size: var(--text-3xl) !important;
+  }
+}
+
+/* ─── Layouts (Admin) ─── */
+@media (max-width: 768px) {
+  .admin-main {
+    margin-left: 0 !important;
+  }
+
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
+  .admin-content {
+    padding: var(--space-4) !important;
+  }
+
+  .admin-sidebar {
+    transform: translateX(-100%) !important;
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─── Public Components ─── */
+@media (max-width: 860px) {
+  /* Navbar */
+  .navbar-pill {
+    padding: var(--space-2) var(--space-3) !important;
+    position: relative !important;
+    flex-wrap: wrap !important;
+    height: auto !important;
+    gap: var(--space-2) 0 !important;
+  }
+  
+  .navbar-brand {
+    gap: var(--space-2) !important;
+    order: 1 !important;
+  }
+
+  .brand-text {
+    font-size: clamp(0.7rem, 2.5vw, 1rem) !important;
+    white-space: nowrap !important;
+  }
+
+  .brand-logo-circle {
+    width: 32px !important;
+    height: 32px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .brand-logo {
+    height: 20px !important;
+  }
+
+  .navbar-actions {
+    gap: var(--space-1) !important;
+    order: 2 !important;
+  }
+
+  .theme-toggle {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .hamburger {
+    display: none !important;
+  }
+
+  .navbar-links {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    background: var(--color-bg-card) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    padding: var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom)) var(--space-2) !important;
+    border: none !important;
+    border-top: 1px solid var(--color-border) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1) !important;
+    pointer-events: auto !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    gap: 0 !important;
+    animation: fadeInDown 0.3s ease !important;
+    z-index: 9999 !important;
+  }
+  
+  .nav-link {
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    width: auto !important;
+    text-align: center !important;
+    padding: var(--space-1) !important;
+    border-radius: var(--radius-md) !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+    color: var(--color-text-muted) !important;
+  }
+
+  .nav-icon {
+    display: block !important;
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .nav-link:hover,
+  .nav-link.router-link-exact-active {
+    background: transparent !important;
+    color: var(--color-text-accent) !important;
+  }
+
+  .semester-btn {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+    color: inherit !important;
+  }
+
+  .semester-selector {
+    position: static !important;
+  }
+
+  .semester-dropdown {
+    position: fixed !important;
+    bottom: calc(100% + var(--space-2)) !important;
+    top: auto !important;
+    left: var(--space-4) !important;
+    right: var(--space-4) !important;
+    width: auto !important;
+    transform: none !important;
+    background: var(--color-bg-card) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: 1px solid var(--color-border) !important;
+    padding: var(--space-2) !important;
+    z-index: 10000 !important;
+  }
+
+
+}
+
+@media (max-width: 768px) {
+  /* Hero Section */
+  .hero-title-line {
+    font-size: clamp(1rem, 5vw, 1.25rem) !important;
+    letter-spacing: 2px !important;
+  }
+
+  .hero-title-accent {
+    font-size: clamp(1.8rem, 8vw, 2.5rem) !important;
+    line-height: 1.1 !important;
+  }
+
+  .hero-stats {
+    gap: var(--space-4) !important;
+  }
+
+  .stat-number {
+    font-size: var(--text-2xl) !important;
+  }
+
+  .hero-description {
+    font-size: var(--text-base) !important;
+  }
+
+  /* Footer Section */
+  .footer-inner {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-8) !important;
+  }
+
+  /* Student Modal */
+  .modal-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-avatar {
+    aspect-ratio: 1 !important;
+    max-height: 250px !important;
+  }
+
+  .modal-content {
+    padding: var(--space-5) !important;
+  }
+
+  .modal-name {
+    font-size: var(--text-2xl) !important;
+  }
+}
+
+/* ─── Public Pages ─── */
+@media (max-width: 768px) {
+  /* Home Page & List Pages Grids */
+  .filter-tabs {
+    flex-wrap: wrap !important;
+  }
+
+  .students-grid, .posts-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .scores-table-wrap {
+    overflow-x: auto !important;
+  }
+
+  .scores-table {
+    min-width: 600px !important;
+  }
+
+  /* Post Detail Page */
+  .post-title {
+    font-size: var(--text-2xl) !important;
+  }
+  
+  .post-body {
+    padding: var(--space-5) !important;
+    margin: var(--space-6) auto !important;
+  }
+}
+
+/* ─── Admin Section ─── */
+@media (max-width: 860px) {
+  /* Admin Layout */
+  .admin-main {
+    margin-left: 0 !important;
+  }
+
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
+  .admin-content {
+    padding: var(--space-4) !important;
+  }
+
+  .admin-header {
+    padding: 0 var(--space-4) !important;
+  }
+
+  /* Admin Sidebar */
+  .admin-sidebar {
+    transform: translateX(-100%) !important;
+    z-index: var(--z-modal) !important;
+    transition: transform 0.3s ease !important;
+    box-shadow: var(--shadow-2xl) !important;
+  }
+  
+  .admin-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Admin Common Pages */
+  .page-top {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--space-4) !important;
+  }
+
+  .page-top-right, .page-top-left {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+  
+  .page-top .form-select,
+  .page-top .search-input {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .filters-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .search-wrap, .search-input {
+    max-width: 100% !important;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr !important;
+  }
+  
+
+  
+  /* Tables */
+  .data-table-wrap {
+    overflow-x: auto !important;
+  }
+  .data-table {
+    min-width: 800px !important;
+  }
+
+  /* Dashboard */
+  .dashboard-stats {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .dashboard-charts {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Manage Semesters */
+  .semesters-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Modals */
+  .modal-content {
+    margin: var(--space-4) !important;
+    max-width: 100% !important;
+  }
+}

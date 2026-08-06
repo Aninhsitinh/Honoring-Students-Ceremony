@@ -51,12 +51,24 @@ const migrate = async () => {
         id SERIAL PRIMARY KEY,
         student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
         subject_name VARCHAR(100) NOT NULL,
-        score DECIMAL(4,2) NOT NULL,
+        score DECIMAL(5,2) NOT NULL,
         semester_id INTEGER REFERENCES semesters(id) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
     console.log('✅ Table "top_scores" created');
+
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS subjects (
+        id SERIAL PRIMARY KEY,
+        code VARCHAR(50) NOT NULL,
+        name VARCHAR(150) NOT NULL,
+        department VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(code, department)
+      );
+    `);
+    console.log('✅ Table "subjects" created');
 
     await db.query(`
       CREATE TABLE IF NOT EXISTS posts (

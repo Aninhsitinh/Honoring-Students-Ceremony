@@ -7,7 +7,8 @@ export default {
     login: 'Đăng Nhập',
     dashboard: 'Quản Trị',
     logout: 'Đăng Xuất',
-    semesters: 'Tôn Vinh Sinh Viên'
+    semesters: 'Tôn Vinh Sinh Viên',
+    graduation: 'Lễ Tốt Nghiệp'
   },
   // Hero Section
   hero: {
@@ -39,16 +40,20 @@ export default {
     description: 'FPT Greenwich Vietnam là môi trường giáo dục quốc tế, hướng tới phát triển toàn diện cho sinh viên cả về kiến thức lẫn kỹ năng.',
     links: 'Liên Kết',
     contact: 'Liên Hệ',
-    rights: 'Bản quyền thuộc về FPT Greenwich Vietnam.'
+    rights: 'Bản quyền thuộc về FPT Greenwich Vietnam.',
+    follow_us: 'Kết nối với chúng tôi'
   },
   // Posts
   post: {
     news_events: 'Tin Tức & Sự Kiện',
+    page_desc: 'Cập nhật các sự kiện vinh danh, hoạt động nổi bật và tin tức mới nhất',
+    loading: 'Đang tải...',
     no_news: 'Không có tin tức nào',
     read_more: 'Đọc tiếp',
     back: 'Quay lại',
     share: 'Chia sẻ',
-    published_on: 'Đăng ngày'
+    published_on: 'Đăng ngày',
+    by: 'bởi'
   },
   // Student Modal
   student: {
@@ -56,8 +61,8 @@ export default {
     subject: 'Môn',
     score: 'Điểm',
     close: 'Đóng',
-    excellent: '🏆 Sinh Viên Xuất Sắc',
-    high_score: '⭐ Điểm Cao',
+    excellent: 'Sinh Viên Xuất Sắc',
+    high_score: 'Điểm Cao',
     id: 'MSSV',
     department: 'Khoa',
     semester: 'Kỳ học',
@@ -71,6 +76,7 @@ export default {
     manage_students: 'Quản lý Sinh Viên',
     manage_scores: 'Quản lý Điểm Cao',
     manage_posts: 'Quản lý Tin Tức',
+    manage_subjects: 'Quản lý Môn Học',
     login_title: 'Đăng Nhập Quản Trị',
     login_desc: 'Đăng nhập để quản lý hệ thống',
     username: 'Tên đăng nhập',
@@ -95,6 +101,18 @@ export default {
     type_subject: 'VD: Machine Learning',
     error_save: 'Lỗi khi lưu',
     error_delete: 'Lỗi khi xóa',
+    save_success: 'Lưu thành công!',
+    delete_success: 'Xóa thành công!',
+    all_departments: 'Tất cả chuyên ngành',
+    add_subject: 'Thêm môn học',
+    subject_code: 'Mã môn học',
+    subject_name: 'Tên môn học',
+    no_data: 'Không có dữ liệu',
+    edit_subject: 'Sửa môn học',
+    eg_subject_code: 'VD: CINE1078',
+    eg_subject_name: 'VD: Media Technologies',
+    error_occurred: 'Có lỗi xảy ra',
+    delete_subject_confirm: 'Bạn có chắc chắn muốn xóa môn học này không?',
     none_selected: 'Không chọn',
     // Students
     student_type: 'Loại',

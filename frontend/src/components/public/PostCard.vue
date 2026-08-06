@@ -1,13 +1,13 @@
 <template>
-  <router-link :to="`/tin-tuc/${post.slug}`" class="post-card card">
-    <div class="post-thumbnail" :style="{ backgroundImage: post.thumbnail_url ? `url(${apiBase}${post.thumbnail_url})` : 'none' }">
-      <div v-if="!post.thumbnail_url" class="post-thumb-placeholder">📰</div>
+  <router-link :to="`/news-and-events/${post.slug}`" class="post-card card">
+    <div class="post-thumbnail" :style="{ backgroundImage: post.thumbnail_url ? `url(${getImageUrl(post.thumbnail_url)})` : 'none' }">
+      <div v-if="!post.thumbnail_url" class="post-thumb-placeholder" v-html="newspaperIcon"></div>
     </div>
     <div class="post-body">
       <div class="post-meta">
         <span class="post-date">{{ formatDate(post.published_at || post.created_at) }}</span>
         <span v-if="post.semester_name" class="badge badge-purple" style="font-size: 0.65rem;">
-          {{ post.semester_name }} {{ post.semester_year }}
+          {{ tSem(post.semester_name, $t) }} {{ post.semester_year }}
         </span>
       </div>
       <h3 class="post-title">{{ post.title }}</h3>
@@ -18,12 +18,17 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { tSem } from '../../utils/translate'
+import icons from '../../utils/icons'
+import { getImageUrl } from '../../utils/image'
+
+const { t: $t } = useI18n()
+const newspaperIcon = icons.newspaper
 
 const props = defineProps({
   post: { type: Object, required: true },
 })
-
-const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'
 
 const excerpt = computed(() => {
   const text = props.post.content?.replace(/<[^>]+>/g, '') || ''
@@ -56,8 +61,10 @@ function formatDate(dateStr) {
 
 .post-thumbnail {
   height: 200px;
-  background-size: cover;
+  background-size: contain;
+  background-repeat: no-repeat;
   background-position: center;
+  background-color: var(--color-bg-tertiary);
   position: relative;
 }
 
@@ -90,7 +97,7 @@ function formatDate(dateStr) {
   font-size: var(--text-lg);
   font-weight: 600;
   margin-bottom: var(--space-2);
-  color: var(--color-text-white);
+  color: var(--color-text-primary);
   line-height: 1.4;
   transition: color var(--transition-fast);
 }

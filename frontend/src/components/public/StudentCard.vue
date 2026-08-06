@@ -1,13 +1,13 @@
 <template>
   <div class="student-card card" @click="$emit('select', student)">
     <div class="card-image-wrap">
-      <div class="card-image" :style="{ backgroundImage: student.avatar_url ? `url(${apiBase}${student.avatar_url})` : 'none' }">
+      <div class="card-image" :style="{ backgroundImage: student.avatar_url ? `url(${getImageUrl(student.avatar_url)})` : 'none' }">
         <div v-if="!student.avatar_url" class="card-avatar-placeholder">
           {{ student.full_name?.charAt(0) }}
         </div>
       </div>
       <div class="card-badge">
-        <span class="badge" :class="badgeClass">{{ badgeText }}</span>
+        <span class="badge" :class="badgeClass"><span v-html="badgeIcon"></span></span>
       </div>
       <div class="card-overlay">
         <span class="view-detail">{{ $t('student.view_detail') }} →</span>
@@ -24,6 +24,8 @@
 
 <script setup>
 import { computed } from 'vue'
+import icons from '../../utils/icons'
+import { getImageUrl } from '../../utils/image'
 
 const props = defineProps({
   student: { type: Object, required: true },
@@ -31,7 +33,6 @@ const props = defineProps({
 
 defineEmits(['select'])
 
-const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'
 
 const truncatedDesc = computed(() => {
   if (!props.student.description) return ''
@@ -44,8 +45,8 @@ const badgeClass = computed(() => {
   return props.student.achievement_type === 'excellent' ? 'badge-gold' : 'badge-blue'
 })
 
-const badgeText = computed(() => {
-  return props.student.achievement_type === 'excellent' ? '🏆' : '⭐'
+const badgeIcon = computed(() => {
+  return props.student.achievement_type === 'excellent' ? icons.trophy : icons.star
 })
 </script>
 
@@ -128,7 +129,7 @@ const badgeText = computed(() => {
   font-size: var(--text-lg);
   font-weight: 600;
   margin-bottom: var(--space-1);
-  color: var(--color-text-white);
+  color: var(--color-text-primary);
 }
 
 .card-code {

@@ -2,7 +2,7 @@
   <div class="dashboard">
     <div class="stats-grid">
       <div class="stat-card glass" v-for="(stat, index) in stats" :key="index">
-        <span class="stat-icon">{{ stat.icon }}</span>
+        <span class="stat-icon" v-html="stat.icon"></span>
         <div class="stat-info">
           <span class="stat-value">{{ stat.value }}</span>
           <span class="stat-label">{{ $t(stat.labelKey) }}</span>
@@ -31,11 +31,11 @@
         <h3>{{ $t('admin.recent_activity') }}</h3>
         <div class="recent-list">
           <div v-for="p in recentPosts" :key="p.id" class="recent-item">
-            <div class="recent-avatar post-avatar">📝</div>
+            <div class="recent-avatar post-avatar" v-html="fileTextIcon"></div>
             <div class="recent-info">
               <span class="recent-name">{{ p.title }}</span>
               <span class="recent-meta">
-                {{ p.is_published ? '✅ ' + $t('admin.published') : '📋 ' + $t('admin.draft') }}
+                {{ p.is_published ? $t('admin.published') : $t('admin.draft') }}
               </span>
             </div>
           </div>
@@ -48,12 +48,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../../api/axios'
+import icons from '../../utils/icons'
+
+const fileTextIcon = icons.fileText
 
 const stats = ref([
-  { icon: '👨‍🎓', labelKey: 'admin.total_students', value: 0 },
-  { icon: '📅', labelKey: 'admin.all_semesters', value: 0 },
-  { icon: '📝', labelKey: 'admin.manage_posts', value: 0 },
-  { icon: '⭐', labelKey: 'admin.type_topscore', value: 0 },
+  { icon: icons.graduationCap, labelKey: 'admin.total_students', value: 0 },
+  { icon: icons.calendar, labelKey: 'admin.all_semesters', value: 0 },
+  { icon: icons.fileText, labelKey: 'admin.manage_posts', value: 0 },
+  { icon: icons.star, labelKey: 'admin.type_topscore', value: 0 },
 ])
 
 const recentStudents = ref([])
@@ -198,9 +201,4 @@ onMounted(async () => {
   color: var(--color-text-muted);
 }
 
-@media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

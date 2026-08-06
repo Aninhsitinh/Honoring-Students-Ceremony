@@ -3,7 +3,7 @@
     <div class="hero-overlay"></div>
     <div class="hero-content container">
       <div class="hero-badge animate-fade-in-down">
-        <span class="badge badge-gold">{{ activeSemester?.name }} {{ activeSemester?.year }}</span>
+        <span class="badge badge-gold">{{ tSem(activeSemester?.name, $t) }} {{ activeSemester?.year }}</span>
       </div>
       <h1 class="hero-title animate-fade-in-up">
         <span class="hero-title-line">{{ $t('hero.title_line') }}</span>
@@ -40,16 +40,15 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSemesterStore } from '../../stores/semester'
 import { useStudentStore } from '../../stores/student'
+import { getImageUrl } from '../../utils/image'
 import api from '../../api/axios'
+import { tSem } from '../../utils/translate'
 
-const getImageUrl = (url) => {
-  if (!url) return ''
-  if (url.startsWith('http')) return url
-  const baseUrl = api.defaults.baseURL.replace(/\/api\/?$/, '')
-  return `${baseUrl}${url}`
-}
+const { t: $t } = useI18n()
+
 
 const semesterStore = useSemesterStore()
 const studentStore = useStudentStore()
@@ -136,6 +135,7 @@ const heroStyle = computed(() => {
   justify-content: center;
   gap: var(--space-8);
   margin-bottom: var(--space-12);
+  flex-wrap: wrap;
 }
 
 .stat-item {
@@ -191,26 +191,4 @@ const heroStyle = computed(() => {
   animation: float 1.5s ease-in-out infinite;
 }
 
-@media (max-width: 768px) {
-  .hero-title-line {
-    font-size: var(--text-xl);
-    letter-spacing: 4px;
-  }
-
-  .hero-title-accent {
-    font-size: var(--text-4xl);
-  }
-
-  .hero-stats {
-    gap: var(--space-4);
-  }
-
-  .stat-number {
-    font-size: var(--text-2xl);
-  }
-
-  .hero-description {
-    font-size: var(--text-base);
-  }
-}
 </style>

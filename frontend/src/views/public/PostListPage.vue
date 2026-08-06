@@ -4,7 +4,7 @@
       <div class="container">
         <h1 class="page-title gradient-text animate-fade-in-down">{{ $t('post.news_events') }}</h1>
         <p class="page-desc animate-fade-in-up delay-200">
-          Cập nhật các sự kiện vinh danh, hoạt động nổi bật và tin tức mới nhất
+          {{ $t('post.page_desc') }}
         </p>
       </div>
     </div>
@@ -12,7 +12,7 @@
     <div class="container posts-content">
       <div v-if="loading" class="loading-state">
         <div class="loader"></div>
-        <p>Đang tải...</p>
+        <p>{{ $t('post.loading') }}</p>
       </div>
 
       <div v-else-if="posts.length" class="posts-grid">
@@ -93,12 +93,12 @@ onMounted(async () => {
 }
 
 .loader {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-text-accent);
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--color-border);
+  border-top-color: #3ADDC2;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -115,8 +115,4 @@ onMounted(async () => {
   margin-bottom: var(--space-4);
 }
 
-@media (max-width: 768px) {
-  .page-title { font-size: var(--text-3xl); }
-  .posts-grid { grid-template-columns: 1fr; }
-}
 </style>

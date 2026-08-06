@@ -24,16 +24,18 @@ const DEPARTMENTS = {
 function validateStudentCode(code, department) {
   if (!code || !department) return false;
   let expectedPrefix = null;
+  const deptLower = department.toLowerCase().trim();
+  
   for (const [prefix, majors] of Object.entries(DEPARTMENTS)) {
-    if (majors.includes(department)) {
+    if (majors.some(m => m.toLowerCase().trim() === deptLower)) {
       expectedPrefix = prefix;
       break;
     }
   }
   if (!expectedPrefix) return false; // Unknown department
 
-  const regex = new RegExp(`^${expectedPrefix}\\d{6}$`);
-  return regex.test(code);
+  const regex = new RegExp(`^${expectedPrefix}\\d{6}$`, 'i');
+  return regex.test(code.trim());
 }
 
 const studentController = {
@@ -80,7 +82,7 @@ const studentController = {
       }
 
       if (req.file) {
-        avatar_url = `/uploads/${req.file.filename}`;
+        avatar_url = req.file.path;
       }
 
       const student = await Student.create({
@@ -110,7 +112,7 @@ const studentController = {
       }
 
       if (req.file) {
-        avatar_url = `/uploads/${req.file.filename}`;
+        avatar_url = req.file.path;
       }
 
       // If no new avatar, keep the old one

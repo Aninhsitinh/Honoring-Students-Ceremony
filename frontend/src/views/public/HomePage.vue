@@ -24,17 +24,17 @@
             class="filter-tab"
             :class="{ active: filterType === 'excellent' }"
             @click="filterType = 'excellent'"
-          >🏆 {{ $t('home.top_students') }}</button>
+          ><span v-html="trophyIcon"></span> {{ $t('home.top_students') }}</button>
           <button
             class="filter-tab"
             :class="{ active: filterType === 'top_score' }"
             @click="filterType = 'top_score'"
-          >⭐ {{ $t('home.highest_scores') }}</button>
+          ><span v-html="starIcon"></span> {{ $t('home.highest_scores') }}</button>
         </div>
 
         <div v-if="loading" class="loading-state">
           <div class="loader"></div>
-          <p>Loading...</p>
+          <p>{{ $t('post.loading') }}</p>
         </div>
 
         <div v-else-if="students.length" class="students-grid">
@@ -49,7 +49,7 @@
         </div>
 
         <div v-else class="empty-state">
-          <span class="empty-icon">📭</span>
+          <span class="empty-icon" v-html="inboxIcon"></span>
           <p>{{ $t('home.no_students') }}</p>
         </div>
       </div>
@@ -71,8 +71,8 @@
               <tr>
                 <th>{{ $t('home.subject') }}</th>
                 <th>{{ $t('hero.students') }}</th>
-                <th>ID</th>
-                <th>Department</th>
+                <th>{{ $t('student.id') }}</th>
+                <th>{{ $t('student.department') }}</th>
                 <th>{{ $t('home.score') }}</th>
               </tr>
             </thead>
@@ -120,7 +120,7 @@
         </div>
 
         <div class="view-all-wrap">
-          <router-link to="/tin-tuc" class="btn btn-secondary">
+          <router-link to="/news-and-events" class="btn btn-secondary">
             {{ $t('home.view_all') }} →
           </router-link>
         </div>
@@ -141,11 +141,16 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useSemesterStore } from '../../stores/semester'
 import { useStudentStore } from '../../stores/student'
 import api from '../../api/axios'
+import icons from '../../utils/icons'
 import HeroSection from '../../components/public/HeroSection.vue'
 import StudentCard from '../../components/public/StudentCard.vue'
 import StudentModal from '../../components/public/StudentModal.vue'
 import SearchBar from '../../components/public/SearchBar.vue'
 import PostCard from '../../components/public/PostCard.vue'
+
+const trophyIcon = icons.trophy
+const starIcon = icons.star
+const inboxIcon = icons.inbox
 
 const semesterStore = useSemesterStore()
 const studentStore = useStudentStore()
@@ -373,25 +378,4 @@ onMounted(() => {
   margin-top: var(--space-10);
 }
 
-@media (max-width: 768px) {
-  .filter-tabs {
-    flex-wrap: wrap;
-  }
-
-  .students-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .posts-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .scores-table-wrap {
-    overflow-x: auto;
-  }
-
-  .scores-table {
-    min-width: 600px;
-  }
-}
 </style>

@@ -14,13 +14,13 @@ const routes = [
         meta: { title: 'nav.home' },
       },
       {
-        path: 'tin-tuc',
+        path: 'news-and-events',
         name: 'Posts',
         component: () => import('../views/public/PostListPage.vue'),
         meta: { title: 'post.news_events' },
       },
       {
-        path: 'tin-tuc/:slug',
+        path: 'news-and-events/:slug',
         name: 'PostDetail',
         component: () => import('../views/public/PostDetailPage.vue'),
         meta: { title: 'post.detail' },
@@ -70,6 +70,12 @@ const routes = [
         component: () => import('../views/admin/ManageSemesters.vue'),
         meta: { title: 'admin.manage_semesters' },
       },
+      {
+        path: 'subjects',
+        name: 'ManageSubjects',
+        component: () => import('../views/admin/ManageSubjects.vue'),
+        meta: { title: 'admin.manage_subjects' },
+      },
     ],
   },
 ]
@@ -86,8 +92,8 @@ const router = createRouter({
 // Navigation guard for auth
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title
-    ? `${i18n.global.t(to.meta.title)} | Honoring Students`
-    : 'Honoring Students'
+    ? `${i18n.global.t(to.meta.title)} | Greenwich Honoring Students`
+    : 'Greenwich Honoring Students'
 
   // Check auth for admin routes
   if (to.matched.some((record) => record.meta.requiresAuth)) {

@@ -3,11 +3,11 @@
     <transition name="modal">
       <div v-if="visible" class="modal-backdrop" @click.self="$emit('close')">
         <div class="modal-content glass-strong animate-scale-in">
-          <button class="modal-close" @click="$emit('close')">✕</button>
+          <button class="modal-close" @click="$emit('close')" v-html="xIcon"></button>
 
           <div class="modal-layout">
             <div class="modal-avatar-section">
-              <div class="modal-avatar" :style="{ backgroundImage: student.avatar_url ? `url(${apiBase}${student.avatar_url})` : 'none' }">
+              <div class="modal-avatar" :style="{ backgroundImage: student.avatar_url ? `url(${getImageUrl(student.avatar_url)})` : 'none' }">
                 <div v-if="!student.avatar_url" class="modal-avatar-placeholder">
                   {{ student.full_name?.charAt(0) }}
                 </div>
@@ -17,6 +17,7 @@
             <div class="modal-info-section">
               <div class="modal-badge">
                 <span class="badge" :class="student.achievement_type === 'excellent' ? 'badge-gold' : 'badge-blue'">
+                  <span v-html="student.achievement_type === 'excellent' ? trophyIcon : starIcon"></span>
                   {{ student.achievement_type === 'excellent' ? $t('student.excellent') : $t('student.high_score') }}
                 </span>
               </div>
@@ -34,7 +35,7 @@
                 </div>
                 <div class="meta-item">
                   <span class="meta-label">{{ $t('student.semester') }}</span>
-                  <span class="meta-value">{{ student.semester_name }} {{ student.semester_year }}</span>
+                  <span class="meta-value">{{ tSem(student.semester_name, $t) }} {{ student.semester_year }}</span>
                 </div>
               </div>
 
@@ -61,13 +62,19 @@
 </template>
 
 <script setup>
+import { tSem } from '../../utils/translate'
+import icons from '../../utils/icons'
+import { getImageUrl } from '../../utils/image'
+
 defineProps({
   visible: Boolean,
   student: { type: Object, default: () => ({}) },
 })
 defineEmits(['close'])
 
-const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'
+const xIcon = icons.x
+const trophyIcon = icons.trophy
+const starIcon = icons.star
 </script>
 
 <style scoped>
@@ -100,20 +107,20 @@ const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://loc
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-card);
   color: var(--color-text-secondary);
   font-size: var(--text-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all var(--transition-fast);
-  border: none;
+  border: 1px solid var(--color-border);
   cursor: pointer;
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--color-text-white);
+  background: var(--color-bg-card-hover);
+  color: var(--color-text-primary);
 }
 
 .modal-layout {
@@ -231,22 +238,4 @@ const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://loc
 .modal-enter-from, .modal-leave-to { opacity: 0; }
 .modal-enter-from .modal-content { transform: scale(0.9); }
 
-@media (max-width: 768px) {
-  .modal-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .modal-avatar {
-    aspect-ratio: 1;
-    max-height: 250px;
-  }
-
-  .modal-content {
-    padding: var(--space-5);
-  }
-
-  .modal-name {
-    font-size: var(--text-2xl);
-  }
-}
 </style>
