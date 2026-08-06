@@ -58,6 +58,15 @@ const migrate = async () => {
     `);
     console.log('✅ Table "top_scores" created');
 
+    // Create Indexes for performance optimization
+    console.log('🔄 Creating database indexes...');
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_students_semester ON students(semester_id);`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_topscores_student ON top_scores(student_id);`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_topscores_semester ON top_scores(semester_id);`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_posts_published ON posts(is_published);`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_posts_semester ON posts(semester_id);`);
+    console.log('✅ Indexes created successfully');
+
     await db.query(`
       CREATE TABLE IF NOT EXISTS subjects (
         id SERIAL PRIMARY KEY,
