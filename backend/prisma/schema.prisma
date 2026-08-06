@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique @db.VarChar(50)
+  email         String    @unique @db.VarChar(100)
+  password_hash String    @db.VarChar(255)
+  role          String?   @default("admin") @db.VarChar(20)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  posts         Post[]
+
+  @@map("users")
+}
+
+model Semester {
+  id          Int         @id @default(autoincrement())
+  name        String      @db.VarChar(50)
+  year        Int
+  slug        String      @unique @db.VarChar(50)
+  description String?
+  bg_image    String?     @db.VarChar(500)
+  theme_color String?     @db.VarChar(50)
+  is_active   Boolean?    @default(false)
+  created_at  DateTime?   @default(now()) @db.Timestamp(6)
+  students    Student[]
+  posts       Post[]
+  topScores   TopScore[]
+
+  @@map("semesters")
+}
+
+model Student {
+  id               Int         @id @default(autoincrement())
+  full_name        String      @db.VarChar(100)
+  student_code     String?     @db.VarChar(20)
+  department       String?     @db.VarChar(100)
+  avatar_url       String?     @db.VarChar(500)
+  description      String?
+  achievement_type String?     @default("excellent") @db.VarChar(50)
+  semester_id      Int?
+  sort_order       Int?        @default(0)
+  created_at       DateTime?   @default(now()) @db.Timestamp(6)
+  
+  semester         Semester?   @relation(fields: [semester_id], references: [id], onDelete: Cascade)
+  topScores        TopScore[]
+
+  @@index([semester_id], map: "idx_students_semester")
+  @@map("students")
+}
+
+model TopScore {
+  id           Int       @id @default(autoincrement())
+  student_id   Int?
+  subject_name String    @db.VarChar(100)
+  score        Decimal   @db.Decimal(5, 2)
+  semester_id  Int?
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  
+  student      Student?  @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  semester     Semester? @relation(fields: [semester_id], references: [id], onDelete: Cascade)
+
+  @@index([student_id], map: "idx_topscores_student")
+  @@index([semester_id], map: "idx_topscores_semester")
+  @@map("top_scores")
+}
+
+model Subject {
+  id         Int       @id @default(autoincrement())
+  code       String    @db.VarChar(50)
+  name       String    @db.VarChar(150)
+  department String    @db.VarChar(100)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@unique([code, department])
+  @@map("subjects")
+}
+
+model Post {
+  id            Int       @id @default(autoincrement())
+  title         String    @db.VarChar(255)
+  slug          String    @unique @db.VarChar(255)
+  content       String
+  thumbnail_url String?   @db.VarChar(500)
+  author_id     Int?
+  semester_id   Int?
+  is_published  Boolean?  @default(false)
+  published_at  DateTime? @db.Timestamp(6)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  
+  author        User?     @relation(fields: [author_id], references: [id], onDelete: SetNull)
+  semester      Semester? @relation(fields: [semester_id], references: [id], onDelete: SetNull)
+
+  @@index([is_published], map: "idx_posts_published")
+  @@index([semester_id], map: "idx_posts_semester")
+  @@map("posts")
+}

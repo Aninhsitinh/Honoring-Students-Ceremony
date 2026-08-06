@@ -1,99 +1,132 @@
-const db = require('../config/database');
+const prisma = require('../config/database');
 
 const Post = {
   async findAll({ semester_id, is_published, limit = 20, offset = 0 }) {
-    let query = `
-      SELECT p.*, u.username as author_name, sem.name as semester_name, sem.year as semester_year
-      FROM posts p
-      LEFT JOIN users u ON p.author_id = u.id
-      LEFT JOIN semesters sem ON p.semester_id = sem.id
-      WHERE 1=1
-    `;
-    const params = [];
-    let paramIndex = 1;
-
-    if (semester_id) {
-      query += ` AND p.semester_id = $${paramIndex++}`;
-      params.push(semester_id);
-    }
+    const where = {};
+    if (semester_id) where.semester_id = parseInt(semester_id);
     if (is_published !== undefined) {
-      query += ` AND p.is_published = $${paramIndex++}`;
-      params.push(is_published);
+      // is_published could be a string 'true'/'false' or boolean
+      where.is_published = is_published === 'true' || is_published === true;
     }
 
-    query += ` ORDER BY p.published_at DESC NULLS LAST, p.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
-    params.push(limit, offset);
+    const posts = await prisma.post.findMany({
+      where,
+      include: {
+        author: { select: { username: true } },
+        semester: { select: { name: true, year: true } }
+      },
+      orderBy: [
+        { published_at: 'desc' },
+        { created_at: 'desc' }
+      ],
+      take: parseInt(limit),
+      skip: parseInt(offset)
+    });
 
-    const result = await db.query(query, params);
-    return result.rows;
+    return posts.map(p => ({
+      ...p,
+      author_name: p.author?.username,
+      semester_name: p.semester?.name,
+      semester_year: p.semester?.year
+    }));
   },
 
   async count({ semester_id, is_published }) {
-    let query = 'SELECT COUNT(*) FROM posts WHERE 1=1';
-    const params = [];
-    let paramIndex = 1;
-
-    if (semester_id) {
-      query += ` AND semester_id = $${paramIndex++}`;
-      params.push(semester_id);
-    }
+    const where = {};
+    if (semester_id) where.semester_id = parseInt(semester_id);
     if (is_published !== undefined) {
-      query += ` AND is_published = $${paramIndex++}`;
-      params.push(is_published);
+      where.is_published = is_published === 'true' || is_published === true;
     }
 
-    const result = await db.query(query, params);
-    return parseInt(result.rows[0].count);
+    return await prisma.post.count({ where });
   },
 
   async findById(id) {
-    const result = await db.query(
-      `SELECT p.*, u.username as author_name, sem.name as semester_name, sem.year as semester_year
-       FROM posts p
-       LEFT JOIN users u ON p.author_id = u.id
-       LEFT JOIN semesters sem ON p.semester_id = sem.id
-       WHERE p.id = $1`,
-      [id]
-    );
-    return result.rows[0];
+    const p = await prisma.post.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        author: { select: { username: true } },
+        semester: { select: { name: true, year: true } }
+      }
+    });
+
+    if (!p) return null;
+
+    return {
+      ...p,
+      author_name: p.author?.username,
+      semester_name: p.semester?.name,
+      semester_year: p.semester?.year
+    };
   },
 
   async findBySlug(slug) {
-    const result = await db.query(
-      `SELECT p.*, u.username as author_name, sem.name as semester_name, sem.year as semester_year
-       FROM posts p
-       LEFT JOIN users u ON p.author_id = u.id
-       LEFT JOIN semesters sem ON p.semester_id = sem.id
-       WHERE p.slug = $1`,
-      [slug]
-    );
-    return result.rows[0];
+    const p = await prisma.post.findUnique({
+      where: { slug },
+      include: {
+        author: { select: { username: true } },
+        semester: { select: { name: true, year: true } }
+      }
+    });
+
+    if (!p) return null;
+
+    return {
+      ...p,
+      author_name: p.author?.username,
+      semester_name: p.semester?.name,
+      semester_year: p.semester?.year
+    };
   },
 
   async create({ title, slug, content, thumbnail_url, author_id, semester_id, is_published }) {
-    const published_at = is_published ? new Date() : null;
-    const result = await db.query(
-      `INSERT INTO posts (title, slug, content, thumbnail_url, author_id, semester_id, is_published, published_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [title, slug, content, thumbnail_url, author_id, semester_id, is_published || false, published_at]
-    );
-    return result.rows[0];
+    const isPub = is_published === 'true' || is_published === true;
+    return await prisma.post.create({
+      data: {
+        title,
+        slug,
+        content,
+        thumbnail_url,
+        author_id: author_id ? parseInt(author_id) : null,
+        semester_id: semester_id ? parseInt(semester_id) : null,
+        is_published: isPub,
+        published_at: isPub ? new Date() : null
+      }
+    });
   },
 
   async update(id, { title, slug, content, thumbnail_url, semester_id, is_published }) {
-    const published_at = is_published ? new Date() : null;
-    const result = await db.query(
-      `UPDATE posts SET title = $1, slug = $2, content = $3, thumbnail_url = $4,
-       semester_id = $5, is_published = $6, published_at = COALESCE($7, published_at), updated_at = NOW()
-       WHERE id = $8 RETURNING *`,
-      [title, slug, content, thumbnail_url, semester_id, is_published, published_at, id]
-    );
-    return result.rows[0];
+    const isPub = is_published === 'true' || is_published === true;
+    
+    // Fetch existing post to check current published_at state
+    const existing = await prisma.post.findUnique({ where: { id: parseInt(id) } });
+    
+    let published_at = existing?.published_at;
+    if (isPub && !published_at) {
+      published_at = new Date();
+    } else if (!isPub) {
+      published_at = null;
+    }
+
+    return await prisma.post.update({
+      where: { id: parseInt(id) },
+      data: {
+        title,
+        slug,
+        content,
+        thumbnail_url,
+        semester_id: semester_id ? parseInt(semester_id) : null,
+        is_published: isPub,
+        published_at,
+        updated_at: new Date()
+      }
+    });
   },
 
   async delete(id) {
-    const result = await db.query('DELETE FROM posts WHERE id = $1 RETURNING *', [id]);
-    return result.rows[0];
+    return await prisma.post.delete({
+      where: { id: parseInt(id) }
+    });
   },
 };
 

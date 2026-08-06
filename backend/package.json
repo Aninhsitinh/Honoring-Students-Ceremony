@@ -10,6 +10,7 @@
     "migrate": "node config/migrate.js"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
@@ -23,5 +24,8 @@
     "multer-storage-cloudinary": "^4.0.0",
     "pg": "^8.13.0",
     "slugify": "^1.6.6"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
   }
 }
