@@ -1,5 +1,29 @@
 const Subject = require('../models/subject.model');
 
+// Danh sách chuyên ngành chuẩn – dùng để normalize hoa/thường từ phía client
+const CANONICAL_DEPARTMENTS = [
+  'Công nghệ thông tin',
+  'Trí tuệ nhân tạo và Khoa học dữ liệu',
+  'Trí tuệ nhân tạo và An ninh mạng',
+  'Quản trị Kinh doanh',
+  'Quản trị Marketing',
+  'Quản trị Sự kiện',
+  'Quản trị Truyền thông',
+  'Kinh doanh quốc tế',
+  'Logistics và Quản trị Chuỗi cung ứng',
+  'Thiết kế đồ họa & kỹ thuật số',
+  'Truyền thông đa phương tiện',
+];
+
+function normalizeDepartment(raw) {
+  if (!raw) return raw;
+  const trimmed = raw.trim();
+  const found = CANONICAL_DEPARTMENTS.find(
+    d => d.toLowerCase() === trimmed.toLowerCase()
+  );
+  return found || trimmed; // nếu không khớp thì giữ nguyên
+}
+
 const subjectController = {
   async getAll(req, res) {
     try {
@@ -14,11 +38,12 @@ const subjectController = {
 
   async create(req, res) {
     try {
-      const { code, name, department } = req.body;
+      const { code, name } = req.body;
+      const department = normalizeDepartment(req.body.department);
       if (!code || !name || !department) {
         return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin' });
       }
-      const subject = await Subject.create({ code, name, department });
+      const subject = await Subject.create({ code: code.trim(), name: name.trim(), department });
       res.status(201).json(subject);
     } catch (error) {
       if (error.code === '23505' || error.code === 'P2002') { // unique violation
@@ -30,8 +55,9 @@ const subjectController = {
 
   async update(req, res) {
     try {
-      const { code, name, department } = req.body;
-      const subject = await Subject.update(req.params.id, { code, name, department });
+      const { code, name } = req.body;
+      const department = normalizeDepartment(req.body.department);
+      const subject = await Subject.update(req.params.id, { code: code?.trim(), name: name?.trim(), department });
       if (!subject) return res.status(404).json({ message: 'Không tìm thấy môn học' });
       res.json(subject);
     } catch (error) {

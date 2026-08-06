@@ -200,26 +200,65 @@ async function handleImport(event) {
 
     let successCount = 0
     let failCount = 0
+    let skipCount = 0
+
+    // Danh sách chuyên ngành chuẩn (dùng để normalize hoa/thường)
+    const DEPARTMENT_CANONICAL = [
+      'Công nghệ thông tin',
+      'Trí tuệ nhân tạo và Khoa học dữ liệu',
+      'Trí tuệ nhân tạo và An ninh mạng',
+      'Quản trị Kinh doanh',
+      'Quản trị Marketing',
+      'Quản trị Sự kiện',
+      'Quản trị Truyền thông',
+      'Kinh doanh quốc tế',
+      'Logistics và Quản trị Chuỗi cung ứng',
+      'Thiết kế đồ họa & kỹ thuật số',
+      'Truyền thông đa phương tiện',
+    ]
+
+    function normalizeDepartment(raw) {
+      if (!raw) return null
+      const trimmed = raw.toString().trim()
+      // So sánh không phân biệt hoa/thường, bỏ dấu cách thừa
+      const found = DEPARTMENT_CANONICAL.find(
+        d => d.toLowerCase() === trimmed.toLowerCase()
+      )
+      return found || trimmed // fallback về giá trị gốc nếu không khớp
+    }
 
     for (const row of json) {
       try {
-        const code = row['Mã môn'] || row['code']
-        const name = row['Tên môn'] || row['name']
-        const department = row['Chuyên ngành'] || row['department']
+        const code = (row['Mã môn'] || row['code'] || '').toString().trim()
+        const name = (row['Tên môn'] || row['name'] || '').toString().trim()
+        const rawDepartment = row['Chuyên ngành'] || row['department']
+        const department = normalizeDepartment(rawDepartment)
 
         if (!code || !name || !department) {
           failCount++
           continue
         }
 
-        await api.post('/subjects', { code, name, department })
-        successCount++
+        try {
+          await api.post('/subjects', { code, name, department })
+          successCount++
+        } catch (err) {
+          // Nếu là lỗi trùng (409/400) thì tính là skip, không fail
+          if (err.response?.status === 400 || err.response?.status === 409) {
+            skipCount++
+          } else {
+            failCount++
+          }
+        }
       } catch (err) {
         failCount++
       }
     }
 
-    toast.success(`Import completed! Success: ${successCount}. Failed: ${failCount}.`)
+    const msg = skipCount > 0
+      ? `Import xong! Thành công: ${successCount}. Bỏ qua (đã tồn tại): ${skipCount}. Lỗi: ${failCount}.`
+      : `Import xong! Thành công: ${successCount}. Lỗi: ${failCount}.`
+    toast.success(msg)
     loadSubjects()
   } catch (err) {
     toast.error('An error occurred while reading the Excel file.')
