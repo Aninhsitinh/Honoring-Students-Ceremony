@@ -52,6 +52,7 @@ import DOMPurify from 'dompurify'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
 import { getImageUrl } from '../../utils/image'
+import { useHead } from '@unhead/vue'
 
 const { t } = useI18n()
 const arrowLeftIcon = icons.arrowLeft
@@ -73,7 +74,15 @@ onMounted(async () => {
   try {
     const { data } = await api.get(`/posts/slug/${route.params.slug}`)
     post.value = data
-    document.title = `${data.title} | Greenwich Honoring Students`
+    useHead({
+      title: `${data.title} | Greenwich Honoring Students`,
+      meta: [
+        { name: 'description', content: data.title },
+        { property: 'og:title', content: data.title },
+        { property: 'og:description', content: data.title },
+        { property: 'og:image', content: data.thumbnail_url ? getImageUrl(data.thumbnail_url) : '' }
+      ]
+    })
   } catch (error) {
     console.error('Failed to load post:', error)
   } finally {

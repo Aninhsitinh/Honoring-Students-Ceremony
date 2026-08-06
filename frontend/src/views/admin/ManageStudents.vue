@@ -388,82 +388,63 @@ async function handleImport(event) {
       return
     }
 
-    let successCount = 0
-    let failCount = 0
-    let skipCount = 0
     const semesterId = filterSemester.value
-    importProgress.value = { done: 0, total: json.length }
+    const studentsToImport = []
 
     for (const row of json) {
-      try {
-        // Map Excel columns to payload
-        // Expected columns: "Họ và tên", "Mã sinh viên", "Chuyên ngành", "Loại danh hiệu", "Mô tả", "Môn học", "Điểm"
-        const fullName = (row['Họ và tên'] || row['full_name'] || '').toString().trim()
-        const studentCode = (row['Mã sinh viên'] || row['student_code'] || '').toString().trim()
-        let department = (row['Chuyên ngành'] || row['department'] || '').toString().trim()
-        let achievementType = (row['Loại danh hiệu'] || row['achievement_type'] || 'excellent').toString().trim()
-        const description = (row['Mô tả'] || row['description'] || '').toString().trim()
-        const subjectName = (row['Môn học'] || row['subject_name'] || '').toString().trim()
-        const score = row['Điểm'] || row['score']
+      const fullName = (row['Họ và tên'] || row['full_name'] || '').toString().trim()
+      const studentCode = (row['Mã sinh viên'] || row['student_code'] || '').toString().trim()
+      let department = (row['Chuyên ngành'] || row['department'] || '').toString().trim()
+      let achievementType = (row['Loại danh hiệu'] || row['achievement_type'] || 'excellent').toString().trim()
+      const description = (row['Mô tả'] || row['description'] || '').toString().trim()
+      const subjectName = (row['Môn học'] || row['subject_name'] || '').toString().trim()
+      const score = row['Điểm'] || row['score']
 
-        if (!department && studentCode) {
-          const prefix = studentCode.substring(0, 3).toUpperCase();
-          if (prefix === 'GCS') department = 'Công nghệ thông tin';
-          else if (prefix === 'GBS') department = 'Quản trị Kinh doanh';
-          else if (prefix === 'GDS') department = 'Thiết kế đồ họa & kỹ thuật số';
-        }
-
-        if (!fullName || !studentCode || !department) {
-          failCount++
-          continue
-        }
-
-        // Normalize achievement type
-        if (achievementType.toLowerCase() === 'top score' || achievementType.toLowerCase() === 'top_score') {
-          achievementType = 'top_score'
-        } else {
-          achievementType = 'excellent'
-        }
-
-        const fd = new FormData()
-        fd.append('full_name', fullName)
-        fd.append('student_code', studentCode)
-        fd.append('department', department)
-        fd.append('achievement_type', achievementType)
-        fd.append('description', description)
-        fd.append('semester_id', semesterId)
-
-        const response = await api.post('/students', fd)
-        const newStudent = response.data
-
-        // If subject and score are provided, add to top-scores
-        if (subjectName && score) {
-          await api.post('/top-scores', {
-            student_id: newStudent.id,
-            subject_name: subjectName,
-            score: score,
-            semester_id: semesterId
-          })
-        }
-
-        successCount++
-      } catch (err) {
-        // 409 = duplicate, treat as skip not error
-        if (err.response?.status === 409) {
-          skipCount++
-        } else {
-          failCount++
-        }
-      } finally {
-        importProgress.value.done++
+      if (!department && studentCode) {
+        const prefix = studentCode.substring(0, 3).toUpperCase();
+        if (prefix === 'GCS') department = 'Công nghệ thông tin';
+        else if (prefix === 'GBS') department = 'Quản trị Kinh doanh';
+        else if (prefix === 'GDS') department = 'Thiết kế đồ họa & kỹ thuật số';
       }
+
+      if (!fullName || !studentCode || !department) continue
+
+      if (achievementType.toLowerCase() === 'top score' || achievementType.toLowerCase() === 'top_score') {
+        achievementType = 'top_score'
+      } else {
+        achievementType = 'excellent'
+      }
+
+      studentsToImport.push({
+        full_name: fullName,
+        student_code: studentCode,
+        department,
+        achievement_type: achievementType,
+        description,
+        semester_id: semesterId,
+        subject_name: subjectName,
+        score
+      })
     }
 
-    const skipMsg = skipCount > 0 ? `. Bỏ qua (trùng): ${skipCount}` : ''
-    toast.success(`Import xong! Thành công: ${successCount}${skipMsg}. Lỗi: ${failCount}.`)
-    loadStudents()
+    if (studentsToImport.length === 0) {
+      toast.warning('No valid data found in Excel file.')
+      return
+    }
+
+    importProgress.value = { done: 0, total: studentsToImport.length }
+    
+    // bulk import API call
+    try {
+      const res = await api.post('/students/import', { students: studentsToImport })
+      importProgress.value.done = studentsToImport.length
+      toast.success(`Import xong! Thành công: ${res.data.imported}.`)
+      loadStudents()
+    } catch (err) {
+      toast.error('Có lỗi xảy ra khi gọi API Import.')
+    }
   } catch (err) {
-    toast.error('An error occurred while reading the Excel file.')
+    toast.error($t('admin.excel_error') || 'An error occurred while reading the Excel file.')
   } finally {
     importing.value = false
     event.target.value = '' // reset file input

@@ -1,5 +1,6 @@
 const Semester = require('../models/semester.model');
 const slugify = require('slugify');
+const { deleteCloudinaryImage } = require('../utils/cloudinary');
 
 const semesterController = {
   async getAll(req, res) {
@@ -79,6 +80,9 @@ const semesterController = {
       const semester = await Semester.delete(req.params.id);
       if (!semester) {
         return res.status(404).json({ message: 'error.semester.not_found' });
+      }
+      if (semester.bg_image) {
+        await deleteCloudinaryImage(semester.bg_image);
       }
       res.json({ message: 'semester.deleted', semester });
     } catch (error) {

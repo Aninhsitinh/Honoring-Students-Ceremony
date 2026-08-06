@@ -73,6 +73,17 @@ const subjectController = {
       }
 
       const updated = await Subject.update(req.params.id, { code, name, department });
+
+      if (name && subject.name && name !== subject.name) {
+        // Sync TopScore records
+        const { PrismaClient } = require('@prisma/client');
+        const prisma = new PrismaClient();
+        await prisma.topScore.updateMany({
+          where: { subject_name: subject.name },
+          data: { subject_name: name }
+        });
+      }
+
       res.json(updated);
     } catch (error) {
       console.error('Update subject error:', error);

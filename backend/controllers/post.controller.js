@@ -1,5 +1,6 @@
 const Post = require('../models/post.model');
 const slugify = require('slugify');
+const { deleteCloudinaryImage } = require('../utils/cloudinary');
 
 const postController = {
   async getAll(req, res) {
@@ -116,6 +117,9 @@ const postController = {
       const post = await Post.delete(req.params.id);
       if (!post) {
         return res.status(404).json({ message: 'error.post.not_found' });
+      }
+      if (post.thumbnail_url) {
+        await deleteCloudinaryImage(post.thumbnail_url);
       }
       res.json({ message: 'post.deleted', post });
     } catch (error) {

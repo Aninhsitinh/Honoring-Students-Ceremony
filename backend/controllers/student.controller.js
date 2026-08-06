@@ -1,6 +1,7 @@
 const Student = require('../models/student.model');
 const TopScore = require('../models/topScore.model');
 const { broadcast } = require('../utils/sse');
+const { deleteCloudinaryImage } = require('../utils/cloudinary');
 
 const DEPARTMENTS = {
   GCS: [
@@ -150,10 +151,65 @@ const studentController = {
     }
   },
 
+  async importExcel(req, res) {
+    try {
+      const { students } = req.body;
+      if (!students || !Array.isArray(students)) {
+        return res.status(400).json({ message: 'error.invalid_data' });
+      }
+
+      let successCount = 0;
+      for (const row of students) {
+        const { full_name, student_code, department, achievement_type, description, semester_id, subject_name, score } = row;
+        if (!full_name || !student_code || !department) continue;
+
+        const codePattern = /^(GCS|GBS|GDS)\d{6}$/;
+        if (!codePattern.test(student_code)) continue;
+
+        // check if student exists
+        let student = await Student.findByCodeAndSemester(student_code, semester_id);
+        if (!student) {
+          student = await Student.create({
+            full_name, student_code, department, achievement_type, description, semester_id, sort_order: 0
+          });
+        }
+
+        // if subject_name and score provided, add TopScore
+        if (subject_name && score != null) {
+          // Check if TopScore already exists to avoid duplicates
+          const TopScore = require('../models/topScore.model');
+          const existingScores = await TopScore.findAll({ student_id: student.id, semester_id });
+          const alreadyHasScore = existingScores.some(ts => ts.subject_name.toLowerCase() === subject_name.toLowerCase());
+          
+          if (!alreadyHasScore) {
+            await TopScore.create({
+              student_id: student.id,
+              subject_name,
+              score,
+              semester_id
+            });
+          }
+        }
+        successCount++;
+      }
+      
+      broadcast('students');
+      res.json({ message: 'Success', imported: successCount });
+    } catch (error) {
+      console.error('Import error:', error);
+      res.status(500).json({ message: 'error.server' });
+    }
+  },
+
   async delete(req, res) {
     try {
       const student = await Student.delete(req.params.id);
       if (!student) return res.status(404).json({ message: 'error.student.not_found' });
+      
+      if (student.avatar_url) {
+        await deleteCloudinaryImage(student.avatar_url);
+      }
+
       broadcast('students');
       res.json({ message: 'admin.delete_success', student });
     } catch (error) {
@@ -167,7 +223,23 @@ const studentController = {
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ message: 'error.invalid_data' });
     }
+    
+    // Fetch students to delete their images
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    const studentsToDelete = await prisma.student.findMany({
+      where: { id: { in: ids.map(id => parseInt(id)) } }
+    });
+
     const result = await Student.deleteMany(ids);
+    
+    // Cleanup Cloudinary
+    for (const student of studentsToDelete) {
+      if (student.avatar_url) {
+        await deleteCloudinaryImage(student.avatar_url);
+      }
+    }
+
     broadcast('students');
     res.json({ message: 'admin.delete_success', count: result.count });
   })

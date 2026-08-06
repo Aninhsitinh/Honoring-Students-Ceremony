@@ -160,6 +160,8 @@ import PostCard from '../../components/public/PostCard.vue'
 import PostCardSkeleton from '../../components/public/PostCardSkeleton.vue'
 import TopScoresTableSkeleton from '../../components/public/TopScoresTableSkeleton.vue'
 import { useRealtimeUpdates } from '../../utils/useRealtimeUpdates'
+import { useHead } from '@unhead/vue'
+import { getImageUrl } from '../../utils/image'
 
 const trophyIcon = icons.trophy
 const starIcon = icons.star
@@ -183,6 +185,21 @@ const selectedSemester = computed(() => semesterStore.selectedSemester)
 const hasMoreStudents = computed(() => studentStore.students.length < studentStore.total)
 const loadingMore = ref(false)
 const studentLimit = 12
+
+// Dynamic SEO
+watch(selectedSemester, (semester) => {
+  if (semester) {
+    useHead({
+      title: `Lễ Vinh Danh - ${semester.name} ${semester.year}`,
+      meta: [
+        { name: 'description', content: semester.description || `Lễ vinh danh sinh viên xuất sắc kỳ ${semester.name} năm ${semester.year}` },
+        { property: 'og:title', content: `Lễ Vinh Danh - ${semester.name} ${semester.year}` },
+        { property: 'og:description', content: semester.description || `Lễ vinh danh sinh viên xuất sắc kỳ ${semester.name} năm ${semester.year}` },
+        { property: 'og:image', content: semester.bg_image ? getImageUrl(semester.bg_image) : '' }
+      ]
+    })
+  }
+}, { immediate: true })
 
 async function loadData() {
   const semId = selectedSemester.value?.id

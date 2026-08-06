@@ -9,6 +9,7 @@ router.get('/', studentController.getAll);
 router.get('/:id', studentController.getById);
 
 // Admin routes
+router.post('/import', auth, studentController.importExcel);
 router.post('/', auth, upload.single('avatar'), studentController.create);
 router.put('/:id', auth, upload.single('avatar'), studentController.update);
 router.post('/bulk-delete', auth, studentController.bulkDelete);
