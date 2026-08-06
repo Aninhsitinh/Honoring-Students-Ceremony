@@ -85,6 +85,11 @@ const studentController = {
         avatar_url = req.file.path;
       }
 
+      const existingStudent = await Student.findByCodeAndSemester(student_code, semester_id);
+      if (existingStudent) {
+        return res.status(409).json({ message: 'error.student.already_exists' });
+      }
+
       const student = await Student.create({
         full_name,
         student_code,

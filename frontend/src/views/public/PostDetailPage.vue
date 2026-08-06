@@ -148,8 +148,15 @@ onMounted(async () => {
   padding: var(--space-10);
   border-radius: var(--radius-xl);
   line-height: 1.9;
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+
+/* Force rich text to adapt to dark/light mode */
+:deep(.post-body *),
+:deep(.post-body [style]) {
+  color: inherit !important;
+  background-color: transparent !important;
 }
 
 .post-body :deep(h2) {

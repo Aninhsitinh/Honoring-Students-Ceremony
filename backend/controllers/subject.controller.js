@@ -21,8 +21,7 @@ const subjectController = {
       const subject = await Subject.create({ code, name, department });
       res.status(201).json(subject);
     } catch (error) {
-      console.error('Create subject error:', error);
-      if (error.code === '23505') { // unique violation
+      if (error.code === '23505' || error.code === 'P2002') { // unique violation
         return res.status(400).json({ message: 'Mã môn học này đã tồn tại trong chuyên ngành' });
       }
       res.status(500).json({ message: 'Lỗi server' });
@@ -36,8 +35,7 @@ const subjectController = {
       if (!subject) return res.status(404).json({ message: 'Không tìm thấy môn học' });
       res.json(subject);
     } catch (error) {
-      console.error('Update subject error:', error);
-      if (error.code === '23505') {
+      if (error.code === '23505' || error.code === 'P2002') {
         return res.status(400).json({ message: 'Mã môn học này đã tồn tại trong chuyên ngành' });
       }
       res.status(500).json({ message: 'Lỗi server' });

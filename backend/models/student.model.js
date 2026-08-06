@@ -69,6 +69,15 @@ const Student = {
     };
   },
 
+  async findByCodeAndSemester(student_code, semester_id) {
+    return await prisma.student.findFirst({
+      where: {
+        student_code,
+        semester_id: parseInt(semester_id)
+      }
+    });
+  },
+
   async create({ full_name, student_code, department, avatar_url, description, achievement_type, semester_id, sort_order }) {
     return await prisma.student.create({
       data: {
