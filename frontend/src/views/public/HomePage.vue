@@ -32,9 +32,9 @@
           ><span v-html="starIcon"></span> {{ $t('home.highest_scores') }}</button>
         </div>
 
-        <div v-if="loading" class="loading-state">
-          <div class="loader"></div>
-          <p>{{ $t('post.loading') }}</p>
+        <!-- Skeleton while loading -->
+        <div v-if="loading" class="students-grid">
+          <StudentCardSkeleton v-for="n in 6" :key="n" />
         </div>
 
         <div v-else-if="students.length" class="students-grid">
@@ -65,7 +65,14 @@
           {{ $t('home.highest_scores_desc') }}
         </p>
 
-        <div v-if="topScores.length" class="scores-table-wrap glass">
+        <!-- Skeleton table -->
+        <TopScoresTableSkeleton
+          v-if="loadingScores"
+          :rows="6"
+          :headers="[$t('home.subject'), $t('hero.students'), $t('student.id'), $t('student.department'), $t('home.score')]"
+        />
+
+        <div v-else-if="topScores.length" class="scores-table-wrap glass">
           <table class="scores-table">
             <thead>
               <tr>
@@ -78,21 +85,11 @@
             </thead>
             <tbody>
               <tr v-for="ts in topScores" :key="ts.id" class="animate-fade-in-up">
-                <td>
-                  <span class="subject-name">{{ ts.subject_name }}</span>
-                </td>
-                <td>
-                  <span class="student-name">{{ ts.full_name }}</span>
-                </td>
-                <td>
-                  <span class="student-code-cell">{{ ts.student_code }}</span>
-                </td>
-                <td>
-                  <span class="dept-cell">{{ ts.department }}</span>
-                </td>
-                <td>
-                  <span class="score-badge">{{ ts.score }}</span>
-                </td>
+                <td><span class="subject-name">{{ ts.subject_name }}</span></td>
+                <td><span class="student-name">{{ ts.full_name }}</span></td>
+                <td><span class="student-code-cell">{{ ts.student_code }}</span></td>
+                <td><span class="dept-cell">{{ ts.department }}</span></td>
+                <td><span class="score-badge">{{ ts.score }}</span></td>
               </tr>
             </tbody>
           </table>
@@ -101,7 +98,7 @@
     </section>
 
     <!-- News Section -->
-    <section class="section news-section" v-if="posts.length">
+    <section class="section news-section">
       <div class="container">
         <h2 class="section-title">
           <span class="gradient-text">{{ $t('home.latest_news') }}</span>
@@ -110,7 +107,12 @@
           {{ $t('home.latest_news_desc') }}
         </p>
 
-        <div class="posts-grid">
+        <!-- Skeleton posts -->
+        <div v-if="loadingPosts" class="posts-grid">
+          <PostCardSkeleton v-for="n in 3" :key="n" />
+        </div>
+
+        <div v-else-if="posts.length" class="posts-grid">
           <PostCard
             v-for="post in posts"
             :key="post.id"
@@ -119,7 +121,7 @@
           />
         </div>
 
-        <div class="view-all-wrap">
+        <div v-if="posts.length" class="view-all-wrap">
           <router-link to="/news-and-events" class="btn btn-secondary">
             {{ $t('home.view_all') }} →
           </router-link>
@@ -144,9 +146,12 @@ import api from '../../api/axios'
 import icons from '../../utils/icons'
 import HeroSection from '../../components/public/HeroSection.vue'
 import StudentCard from '../../components/public/StudentCard.vue'
+import StudentCardSkeleton from '../../components/public/StudentCardSkeleton.vue'
 import StudentModal from '../../components/public/StudentModal.vue'
 import SearchBar from '../../components/public/SearchBar.vue'
 import PostCard from '../../components/public/PostCard.vue'
+import PostCardSkeleton from '../../components/public/PostCardSkeleton.vue'
+import TopScoresTableSkeleton from '../../components/public/TopScoresTableSkeleton.vue'
 import { useRealtimeUpdates } from '../../utils/useRealtimeUpdates'
 
 const trophyIcon = icons.trophy
@@ -159,7 +164,9 @@ const studentStore = useStudentStore()
 const searchQuery = ref('')
 const filterType = ref('all')
 const topScores = ref([])
+const loadingScores = ref(true)
 const posts = ref([])
+const loadingPosts = ref(true)
 const modalVisible = ref(false)
 const modalStudent = ref({})
 
@@ -177,17 +184,21 @@ async function loadData() {
 
   studentStore.fetchStudents(params)
 
-  // Load top scores
+  // Load top scores with skeleton
+  loadingScores.value = true
   try {
     const { data } = await api.get('/top-scores', { params: { semester_id: semId } })
     topScores.value = data
   } catch { topScores.value = [] }
+  finally { loadingScores.value = false }
 
-  // Load posts
+  // Load posts with skeleton
+  loadingPosts.value = true
   try {
     const { data } = await api.get('/posts', { params: { semester_id: semId, is_published: true, limit: 3 } })
     posts.value = data.posts || []
   } catch { posts.value = [] }
+  finally { loadingPosts.value = false }
 }
 
 async function openModal(student) {

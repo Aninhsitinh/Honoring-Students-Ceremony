@@ -1,8 +1,6 @@
 <template>
   <div class="post-detail-page">
-    <div v-if="loading" class="loading-state">
-      <div class="loader"></div>
-    </div>
+    <PostDetailSkeleton v-if="loading" />
 
     <template v-else-if="post">
       <div class="post-hero" 
@@ -46,6 +44,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import PostDetailSkeleton from '../../components/public/PostDetailSkeleton.vue'
 import { useRoute } from 'vue-router'
 import api from '../../api/axios'
 import { useI18n } from 'vue-i18n'

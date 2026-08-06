@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 // Rate limiter for API routes
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 3000, // increased to allow bulk imports from admin dashboard (1 request per row)
   message: { message: 'Too many requests from this IP, please try again later.' }
 });
 

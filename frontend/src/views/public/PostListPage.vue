@@ -10,9 +10,9 @@
     </div>
 
     <div class="container posts-content">
-      <div v-if="loading" class="loading-state">
-        <div class="loader"></div>
-        <p>{{ $t('post.loading') }}</p>
+      <!-- Skeleton while loading -->
+      <div v-if="loading" class="posts-grid">
+        <PostCardSkeleton v-for="n in 6" :key="n" />
       </div>
 
       <div v-else-if="posts.length" class="posts-grid">
@@ -37,6 +37,7 @@
 import { ref, onMounted } from 'vue'
 import api from '../../api/axios'
 import PostCard from '../../components/public/PostCard.vue'
+import PostCardSkeleton from '../../components/public/PostCardSkeleton.vue'
 
 const posts = ref([])
 const loading = ref(true)
