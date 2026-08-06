@@ -33,7 +33,7 @@ const routes = [
     path: '/admin/login',
     name: 'AdminLogin',
     component: () => import('../views/admin/LoginPage.vue'),
-    meta: { title: 'admin.login' },
+    meta: { title: 'admin.login_title' },
   },
   {
     path: '/admin',
