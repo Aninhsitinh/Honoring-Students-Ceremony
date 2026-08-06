@@ -48,6 +48,12 @@ app.use('/api/top-scores', require('./routes/topScore.routes'));
 app.use('/api/posts', require('./routes/post.routes'));
 app.use('/api/subjects', require('./routes/subject.routes'));
 
+// ─── Server-Sent Events (real-time updates) ───────────────────────────────────
+const { addClient } = require('./utils/sse');
+app.get('/api/events', (req, res) => {
+  addClient(res);
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

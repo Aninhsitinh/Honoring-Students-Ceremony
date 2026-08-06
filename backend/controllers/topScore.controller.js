@@ -1,4 +1,5 @@
 const TopScore = require('../models/topScore.model');
+const { broadcast } = require('../utils/sse');
 
 const topScoreController = {
   async getAll(req, res) {
@@ -40,6 +41,7 @@ const topScoreController = {
     try {
       const { student_id, subject_name, score, semester_id } = req.body;
       const topScore = await TopScore.create({ student_id, subject_name, score, semester_id });
+      broadcast('top_scores_updated', { action: 'create', semester_id });
       res.status(201).json(topScore);
     } catch (error) {
       console.error('Create top score error:', error);
@@ -54,6 +56,7 @@ const topScoreController = {
       if (!topScore) {
         return res.status(404).json({ message: 'error.not_found' });
       }
+      broadcast('top_scores_updated', { action: 'update', semester_id });
       res.json(topScore);
     } catch (error) {
       console.error('Update top score error:', error);
@@ -67,6 +70,7 @@ const topScoreController = {
       if (!topScore) {
         return res.status(404).json({ message: 'error.not_found' });
       }
+      broadcast('top_scores_updated', { action: 'delete' });
       res.json({ message: 'topscore.deleted', topScore });
     } catch (error) {
       console.error('Delete top score error:', error);

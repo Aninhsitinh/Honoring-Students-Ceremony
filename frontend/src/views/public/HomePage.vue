@@ -147,6 +147,7 @@ import StudentCard from '../../components/public/StudentCard.vue'
 import StudentModal from '../../components/public/StudentModal.vue'
 import SearchBar from '../../components/public/SearchBar.vue'
 import PostCard from '../../components/public/PostCard.vue'
+import { useRealtimeUpdates } from '../../utils/useRealtimeUpdates'
 
 const trophyIcon = icons.trophy
 const starIcon = icons.star
@@ -213,6 +214,12 @@ onMounted(() => {
   semesterStore.fetchAll().then(() => {
     if (selectedSemester.value) loadData()
   })
+})
+
+// Real-time: auto-refresh when admin changes data
+useRealtimeUpdates({
+  onStudentsUpdated: loadData,
+  onTopScoresUpdated: loadData,
 })
 </script>
 

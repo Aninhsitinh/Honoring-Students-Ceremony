@@ -92,10 +92,12 @@ import api from '../../api/axios'
 import icons from '../../utils/icons'
 import * as XLSX from 'xlsx'
 import { toast } from '../../utils/toast'
+import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
 const uploadIcon = icons.upload
 const { t: $t } = useI18n()
+const { confirm } = useConfirm()
 
 const subjects = ref([])
 const filterDepartment = ref('')
@@ -167,10 +169,15 @@ async function saveSubject() {
 }
 
 async function deleteSubject(id) {
-  if (!confirm($t('admin.delete_subject_confirm'))) return
+  const ok = await confirm($t('admin.delete_subject_confirm'), {
+    title: $t('admin.delete') + ' môn học',
+    confirmText: $t('admin.delete'),
+    type: 'danger',
+  })
+  if (!ok) return
   try {
     await api.delete(`/subjects/${id}`)
-    toast.success($t('admin.delete_success') || 'Delete successful!')
+    toast.success($t('admin.delete_success') || 'Xóa thành công!')
     loadSubjects()
   } catch (err) {
     toast.error($t('admin.error_occurred'))

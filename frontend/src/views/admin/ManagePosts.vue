@@ -102,9 +102,12 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
 import { getImageUrl } from '../../utils/image'
+import { toast } from '../../utils/toast'
+import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
 const { t: $t } = useI18n()
+const { confirm } = useConfirm()
 const posts = ref([])
 const semesters = ref([])
 const showForm = ref(false)
@@ -174,8 +177,19 @@ async function savePost() {
 }
 
 async function deletePost(id) {
-  if (!confirm($t('admin.confirm_delete'))) return
-  try { await api.delete(`/posts/${id}`); loadPosts() } catch { alert($t('admin.error_delete')) }
+  const ok = await confirm($t('admin.confirm_delete'), {
+    title: $t('admin.delete') + ' bài viết',
+    confirmText: $t('admin.delete'),
+    type: 'danger',
+  })
+  if (!ok) return
+  try {
+    await api.delete(`/posts/${id}`)
+    toast.success($t('admin.delete_success') || 'Xóa thành công!')
+    loadPosts()
+  } catch {
+    toast.error($t('admin.error_delete'))
+  }
 }
 
 onMounted(() => { loadSemesters(); loadPosts() })

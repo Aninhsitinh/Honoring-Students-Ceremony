@@ -10,12 +10,21 @@
       <div class="page-top-right" style="display: flex; gap: var(--space-3); align-items: center;">
         <input type="file" ref="fileInput" @change="handleImport" accept=".xlsx, .xls, .csv" style="display: none">
         <button class="btn btn-secondary" @click="triggerFileInput" :disabled="importing">
-          <span class="icon" v-html="uploadIcon"></span> {{ importing ? 'Importing...' : 'Import Excel' }}
+          <span class="icon" v-html="uploadIcon"></span>
+          <span v-if="!importing">Import Excel</span>
+          <span v-else>{{ importProgress.done }}/{{ importProgress.total }} đang nhập...</span>
         </button>
         <button class="btn btn-primary" @click="openForm()">+ {{ $t('admin.add_student') }}</button>
       </div>
     </div>
 
+    <!-- Import progress bar -->
+    <div v-if="importing" class="import-progress-bar-wrap">
+      <div
+        class="import-progress-bar"
+        :style="{ width: importProgress.total ? (importProgress.done / importProgress.total * 100) + '%' : '0%' }"
+      ></div>
+    </div>
     <div class="data-table-wrap glass">
       <table class="data-table">
         <thead>
@@ -151,10 +160,12 @@ import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
 import * as XLSX from 'xlsx'
 import { toast } from '../../utils/toast'
+import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
 const uploadIcon = icons.upload
 const { t } = useI18n()
+const { confirm } = useConfirm()
 const students = ref([])
 const semesters = ref([])
 const filterSemester = ref('')
@@ -162,6 +173,7 @@ const showForm = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
 const importing = ref(false)
+const importProgress = ref({ done: 0, total: 0 })
 const avatarFile = ref(null)
 const fileInput = ref(null)
 
@@ -266,7 +278,12 @@ async function saveStudent() {
 }
 
 async function deleteStudent(id) {
-  if (!confirm(t('admin.confirm_delete'))) return
+  const ok = await confirm(t('admin.confirm_delete'), {
+    title: t('admin.delete_student') || 'Xóa sinh viên',
+    confirmText: t('admin.delete') || 'Xóa',
+    type: 'danger',
+  })
+  if (!ok) return
   try {
     await api.delete(`/students/${id}`)
     toast.success(t('admin.delete_success') || 'Delete successful!')
@@ -303,7 +320,9 @@ async function handleImport(event) {
 
     let successCount = 0
     let failCount = 0
+    let skipCount = 0
     const semesterId = filterSemester.value
+    importProgress.value = { done: 0, total: json.length }
 
     for (const row of json) {
       try {
@@ -359,11 +378,19 @@ async function handleImport(event) {
 
         successCount++
       } catch (err) {
-        failCount++
+        // 409 = duplicate, treat as skip not error
+        if (err.response?.status === 409) {
+          skipCount++
+        } else {
+          failCount++
+        }
+      } finally {
+        importProgress.value.done++
       }
     }
 
-    toast.success(`Import completed! Success: ${successCount}. Failed: ${failCount}.`)
+    const skipMsg = skipCount > 0 ? `. Bỏ qua (trùng): ${skipCount}` : ''
+    toast.success(`Import xong! Thành công: ${successCount}${skipMsg}. Lỗi: ${failCount}.`)
     loadStudents()
   } catch (err) {
     toast.error('An error occurred while reading the Excel file.')
@@ -507,4 +534,19 @@ onMounted(() => { loadSemesters(); loadStudents() })
   margin-top: var(--space-6);
 }
 
+/* Import progress bar */
+.import-progress-bar-wrap {
+  height: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.import-progress-bar {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.2s ease;
+}
 </style>

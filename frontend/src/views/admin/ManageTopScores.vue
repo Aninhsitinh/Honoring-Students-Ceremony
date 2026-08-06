@@ -90,9 +90,12 @@ import api from '../../api/axios'
 import { useI18n } from 'vue-i18n'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
+import { toast } from '../../utils/toast'
+import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
 const { t: $t } = useI18n()
+const { confirm } = useConfirm()
 const topScores = ref([])
 const semesters = ref([])
 const allStudents = ref([])
@@ -170,8 +173,19 @@ async function saveScore() {
 }
 
 async function deleteScore(id) {
-  if (!confirm($t('admin.confirm_delete'))) return
-  try { await api.delete(`/top-scores/${id}`); loadData() } catch { alert($t('admin.error_delete')) }
+  const ok = await confirm($t('admin.confirm_delete'), {
+    title: $t('admin.delete') + ' điểm cao',
+    confirmText: $t('admin.delete'),
+    type: 'danger',
+  })
+  if (!ok) return
+  try {
+    await api.delete(`/top-scores/${id}`)
+    toast.success($t('admin.delete_success') || 'Xóa thành công!')
+    loadData()
+  } catch {
+    toast.error($t('admin.error_delete'))
+  }
 }
 
 watch(filterSemester, loadData)

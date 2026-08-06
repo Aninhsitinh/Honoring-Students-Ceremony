@@ -1,5 +1,6 @@
 const Student = require('../models/student.model');
 const TopScore = require('../models/topScore.model');
+const { broadcast } = require('../utils/sse');
 
 const DEPARTMENTS = {
   GCS: [
@@ -100,6 +101,7 @@ const studentController = {
         semester_id,
         sort_order,
       });
+      broadcast('students_updated', { action: 'create', semester_id });
       res.status(201).json(student);
     } catch (error) {
       console.error('Create student error:', error);
@@ -140,6 +142,7 @@ const studentController = {
       if (!student) {
         return res.status(404).json({ message: 'error.student.not_found' });
       }
+      broadcast('students_updated', { action: 'update', semester_id });
       res.json(student);
     } catch (error) {
       console.error('Update student error:', error);
@@ -153,6 +156,7 @@ const studentController = {
       if (!student) {
         return res.status(404).json({ message: 'error.student.not_found' });
       }
+      broadcast('students_updated', { action: 'delete' });
       res.json({ message: 'student.deleted', student });
     } catch (error) {
       console.error('Delete student error:', error);

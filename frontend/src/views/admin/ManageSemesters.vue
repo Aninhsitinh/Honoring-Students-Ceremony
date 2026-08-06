@@ -72,9 +72,12 @@ import api from '../../api/axios'
 import { useI18n } from 'vue-i18n'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
+import { toast } from '../../utils/toast'
+import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
 const { t: $t } = useI18n()
+const { confirm } = useConfirm()
 const semesters = ref([])
 const showForm = ref(false)
 const editingId = ref(null)
@@ -117,8 +120,19 @@ async function saveSemester() {
 }
 
 async function deleteSemester(id) {
-  if (!confirm($t('admin.delete_sem_confirm'))) return
-  try { await api.delete(`/semesters/${id}`); loadSemesters() } catch { alert($t('admin.error_delete')) }
+  const ok = await confirm($t('admin.delete_sem_confirm'), {
+    title: $t('admin.delete') + ' kỳ học',
+    confirmText: $t('admin.delete'),
+    type: 'danger',
+  })
+  if (!ok) return
+  try {
+    await api.delete(`/semesters/${id}`)
+    toast.success($t('admin.delete_success') || 'Xóa thành công!')
+    loadSemesters()
+  } catch {
+    toast.error($t('admin.error_delete'))
+  }
 }
 
 onMounted(loadSemesters)

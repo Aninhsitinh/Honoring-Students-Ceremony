@@ -24,6 +24,7 @@
       </div>
     </div>
   </div>
+  <ConfirmDialog />
 </template>
 
 <script setup>
@@ -31,6 +32,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AdminSidebar from '../components/admin/AdminSidebar.vue'
+import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 
 const route = useRoute()
 const { t: $t, locale } = useI18n()
