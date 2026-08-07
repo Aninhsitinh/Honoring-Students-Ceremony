@@ -246,13 +246,20 @@ const form = ref({
   achievement_type: 'excellent', semester_id: '', sort_order: 0,
 })
 
+const CAMPUS_LETTERS = {
+  HN: 'H',
+  DN: 'D',
+  HCM: 'S',
+  CT: 'C'
+}
+
 const DEPARTMENTS = {
-  GCS: [
+  C: [
     'Công nghệ thông tin',
     'Trí tuệ nhân tạo và Khoa học dữ liệu',
     'Trí tuệ nhân tạo và An ninh mạng'
   ],
-  GBS: [
+  B: [
     'Quản trị Kinh doanh',
     'Quản trị Marketing',
     'Quản trị Sự kiện',
@@ -260,7 +267,7 @@ const DEPARTMENTS = {
     'Kinh doanh quốc tế',
     'Logistics và Quản trị Chuỗi cung ứng'
   ],
-  GDS: [
+  D: [
     'Thiết kế đồ họa & kỹ thuật số',
     'Truyền thông đa phương tiện'
   ]
@@ -268,17 +275,22 @@ const DEPARTMENTS = {
 
 function validateStudentCode(code, department) {
   if (!code || !department) return false
-  let expectedPrefix = null
-  for (const [prefix, majors] of Object.entries(DEPARTMENTS)) {
+  
+  let category = null
+  for (const [cat, majors] of Object.entries(DEPARTMENTS)) {
     if (majors.includes(department)) {
-      expectedPrefix = prefix
+      category = cat
       break
     }
   }
-  if (!expectedPrefix) return false
+  if (!category) return false
+
+  const campusCode = authStore.user?.campus && authStore.user.campus !== 'ALL' ? authStore.user.campus : 'HCM'
+  const campusLetter = CAMPUS_LETTERS[campusCode] || 'S'
+  const expectedPrefix = `G${category}${campusLetter}`
 
   const regex = new RegExp(`^${expectedPrefix}\\d{6}$`)
-  return regex.test(code)
+  return regex.test(code.toUpperCase())
 }
 
 async function loadStudents() {

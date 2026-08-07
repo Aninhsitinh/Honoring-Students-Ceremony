@@ -199,7 +199,7 @@ export default {
     },
     student: {
       not_found: 'Student not found',
-      invalid_code: 'Invalid student ID. Please check the prefix (GCS, GBS, GDS) matching the department and ensure exactly 6 digits follow.'
+      invalid_code: 'Invalid student ID. Please check the prefix matching your campus and department (e.g. GCH, GCS, GBD...) and ensure exactly 6 digits follow.'
     },
     post: {
       not_found: 'Post not found'

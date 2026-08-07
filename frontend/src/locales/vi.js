@@ -199,7 +199,7 @@ export default {
     },
     student: {
       not_found: 'Không tìm thấy sinh viên',
-      invalid_code: 'Mã số sinh viên không hợp lệ. Vui lòng kiểm tra lại tiền tố ngành (GCS, GBS, GDS) và đảm bảo có đúng 6 chữ số theo sau.'
+      invalid_code: 'Mã số sinh viên không hợp lệ. Vui lòng kiểm tra lại tiền tố ngành tương ứng với cơ sở của bạn (ví dụ: GCH, GCS, GBD...) và đảm bảo có đúng 6 chữ số theo sau.'
     },
     post: {
       not_found: 'Không tìm thấy bài viết'
