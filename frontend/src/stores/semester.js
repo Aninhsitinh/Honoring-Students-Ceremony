@@ -11,7 +11,10 @@ export const useSemesterStore = defineStore('semester', () => {
   async function fetchAll(autoSelect = true) {
     loading.value = true
     try {
-      const campus = localStorage.getItem('campus') || 'HN'
+      // Use campusStore instead of localStorage to avoid race condition
+      const { useCampusStore } = await import('./campus')
+      const campusStore = useCampusStore()
+      const campus = campusStore.currentCampus || 'HN'
       const { data } = await api.get(`/semesters?campus=${campus}`)
       semesters.value = data
       

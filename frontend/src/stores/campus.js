@@ -14,13 +14,10 @@ export const useCampusStore = defineStore('campus', () => {
   ]
 
   // Persist to localStorage whenever it changes
-  watch(currentCampus, (newCampus) => {
-    localStorage.setItem('campus', newCampus)
-  })
-
   function setCampus(campusCode) {
     if (campuses.some(c => c.code === campusCode)) {
       currentCampus.value = campusCode
+      localStorage.setItem('campus', campusCode)
     }
   }
 
