@@ -45,10 +45,15 @@ const semesterController = {
   async create(req, res) {
     try {
       const { name, year, description, is_active } = req.body;
-      // If Admin has a specific campus (not ALL), force create for their campus
-      const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
       
-      const slug = slugify(`${name}-${year}-${campus}`, { lower: true, locale: 'vi' });
+      const parsedYear = parseInt(year, 10);
+      const parsedIsActive = is_active === 'true' || is_active === true;
+      
+      // If Admin has a specific campus (not ALL), force create for their campus.
+      // Fallback to 'HN' if token is old and doesn't have campus.
+      const campus = (req.user && req.user.campus && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
+      
+      const slug = slugify(`${name}-${parsedYear}-${campus}`, { lower: true, locale: 'vi' });
       const bg_image = req.file ? req.file.path : null;
 
       const existing = await Semester.findBySlug(slug);
@@ -56,7 +61,7 @@ const semesterController = {
         return res.status(400).json({ message: 'error.semester.exists' });
       }
 
-      const semester = await Semester.create({ name, year, slug, description, is_active, bg_image, campus });
+      const semester = await Semester.create({ name, year: parsedYear, slug, description, is_active: parsedIsActive, bg_image, campus });
       clearCache('/api/semesters');
       res.status(201).json(semester);
     } catch (error) {
@@ -68,8 +73,12 @@ const semesterController = {
   async update(req, res) {
     try {
       const { name, year, description, is_active } = req.body;
-      const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
-      const slug = slugify(`${name}-${year}-${campus}`, { lower: true, locale: 'vi' });
+      
+      const parsedYear = parseInt(year, 10);
+      const parsedIsActive = is_active === 'true' || is_active === true;
+      
+      const campus = (req.user && req.user.campus && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
+      const slug = slugify(`${name}-${parsedYear}-${campus}`, { lower: true, locale: 'vi' });
       const bg_image = req.file ? req.file.path : req.body.bg_image;
 
       const current = await Semester.findById(req.params.id);
@@ -81,7 +90,7 @@ const semesterController = {
       }
 
 
-      const semester = await Semester.update(req.params.id, { name, year, slug, description, is_active, bg_image, campus });
+      const semester = await Semester.update(req.params.id, { name, year: parsedYear, slug, description, is_active: parsedIsActive, bg_image, campus });
       clearCache('/api/semesters');
       res.json(semester);
     } catch (error) {
