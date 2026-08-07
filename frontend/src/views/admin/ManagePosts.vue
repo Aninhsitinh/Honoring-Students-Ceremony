@@ -102,12 +102,14 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
 import { getImageUrl } from '../../utils/image'
+import { useAuthStore } from '../../stores/auth'
 import { toast } from '../../utils/toast'
 import { useConfirm } from '../../utils/confirm'
 
 const xIcon = icons.x
 const { t: $t } = useI18n()
 const { confirm } = useConfirm()
+const authStore = useAuthStore()
 const posts = ref([])
 const semesters = ref([])
 const showForm = ref(false)
@@ -119,12 +121,16 @@ const previewImage = ref(null)
 const form = ref({ title: '', content: '', semester_id: '', is_published: false, thumbnail_url: null })
 
 async function loadPosts() {
-  const { data } = await api.get('/posts', { params: { limit: 100 } })
+  const params = { limit: 100 }
+  if (authStore.user?.campus && authStore.user.campus !== 'ALL') params.campus = authStore.user.campus
+  const { data } = await api.get('/posts', { params })
   posts.value = data.posts || []
 }
 
 async function loadSemesters() {
-  const { data } = await api.get('/semesters')
+  const params = {}
+  if (authStore.user?.campus && authStore.user.campus !== 'ALL') params.campus = authStore.user.campus
+  const { data } = await api.get('/semesters', { params })
   semesters.value = data
 }
 

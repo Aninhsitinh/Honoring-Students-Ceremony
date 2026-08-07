@@ -1,9 +1,10 @@
 const prisma = require('../config/database');
 
 const TopScore = {
-  async findAll({ semester_id, subject_name }) {
+  async findAll({ semester_id, subject_name, campus }) {
     const where = {};
     if (semester_id) where.semester_id = parseInt(semester_id);
+    if (campus) where.semester = { campus };
     if (subject_name) {
       where.subject_name = {
         contains: subject_name,

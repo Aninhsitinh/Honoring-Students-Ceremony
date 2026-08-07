@@ -69,6 +69,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../../api/axios'
+import { useAuthStore } from '../../stores/auth'
 import { useI18n } from 'vue-i18n'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
@@ -78,6 +79,7 @@ import { useConfirm } from '../../utils/confirm'
 const xIcon = icons.x
 const { t: $t } = useI18n()
 const { confirm } = useConfirm()
+const authStore = useAuthStore()
 const semesters = ref([])
 const showForm = ref(false)
 const editingId = ref(null)
@@ -86,7 +88,9 @@ const saving = ref(false)
 const form = ref({ name: 'Kỳ Xuân', year: new Date().getFullYear(), is_active: false })
 
 async function loadSemesters() {
-  const { data } = await api.get('/semesters')
+  const params = {}
+  if (authStore.user?.campus && authStore.user.campus !== 'ALL') params.campus = authStore.user.campus
+  const { data } = await api.get('/semesters', { params })
   semesters.value = data
 }
 

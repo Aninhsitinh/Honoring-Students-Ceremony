@@ -54,15 +54,16 @@ function validateStudentCode(code, department, campus = 'HN') {
 const studentController = {
   async getAll(req, res) {
     try {
-      const { semester_id, achievement_type, search, limit = 50, offset = 0 } = req.query;
+      const { semester_id, achievement_type, search, campus, limit = 50, offset = 0 } = req.query;
       const students = await Student.findAll({
         semester_id,
         achievement_type,
         search,
+        campus,
         limit: parseInt(limit),
         offset: parseInt(offset),
       });
-      const total = await Student.count({ semester_id, achievement_type, search });
+      const total = await Student.count({ semester_id, achievement_type, search, campus });
       res.json({ students, total, limit: parseInt(limit), offset: parseInt(offset) });
     } catch (error) {
       console.error('Get students error:', error);

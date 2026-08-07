@@ -1,9 +1,10 @@
 const prisma = require('../config/database');
 
 const Student = {
-  async findAll({ semester_id, achievement_type, search, limit = 50, offset = 0 }) {
+  async findAll({ semester_id, achievement_type, search, campus, limit = 50, offset = 0 }) {
     const where = {};
     if (semester_id) where.semester_id = parseInt(semester_id);
+    if (campus) where.semester = { campus };
     if (achievement_type) where.achievement_type = achievement_type;
     if (search) {
       where.OR = [
@@ -35,9 +36,10 @@ const Student = {
     }));
   },
 
-  async count({ semester_id, achievement_type, search }) {
+  async count({ semester_id, achievement_type, search, campus }) {
     const where = {};
     if (semester_id) where.semester_id = parseInt(semester_id);
+    if (campus) where.semester = { campus };
     if (achievement_type) where.achievement_type = achievement_type;
     if (search) {
       where.OR = [

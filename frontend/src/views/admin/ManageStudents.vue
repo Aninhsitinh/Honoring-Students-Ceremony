@@ -169,6 +169,7 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '../../api/axios'
+import { useAuthStore } from '../../stores/auth'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
 import * as XLSX from 'xlsx'
@@ -183,6 +184,7 @@ const { t } = useI18n()
 const { confirm } = useConfirm()
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 const students = ref([])
 const semesters = ref([])
 const filterSemester = ref(route.query.semester || '')
@@ -282,12 +284,15 @@ function validateStudentCode(code, department) {
 async function loadStudents() {
   const params = {}
   if (filterSemester.value) params.semester_id = filterSemester.value
+  if (authStore.user?.campus && authStore.user.campus !== 'ALL') params.campus = authStore.user.campus
   const { data } = await api.get('/students', { params })
   students.value = data.students || []
 }
 
 async function loadSemesters() {
-  const { data } = await api.get('/semesters')
+  const params = {}
+  if (authStore.user?.campus && authStore.user.campus !== 'ALL') params.campus = authStore.user.campus
+  const { data } = await api.get('/semesters', { params })
   semesters.value = data
   if (!filterSemester.value && data.length > 0) {
     // If no filter in URL, don't force select, let it show "All" or keep default.

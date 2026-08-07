@@ -96,6 +96,7 @@ import { ref, watch, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '../../api/axios'
+import { useAuthStore } from '../../stores/auth'
 import { tSem } from '../../utils/translate'
 import icons from '../../utils/icons'
 import * as XLSX from 'xlsx'
@@ -108,6 +109,7 @@ const { t: $t } = useI18n()
 const { confirm } = useConfirm()
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 const topScores = ref([])
 const semesters = ref([])
 const allStudents = ref([])
@@ -167,17 +169,22 @@ watch(() => form.value.student_id, async (newVal) => {
 async function loadData() {
   const params = {}
   if (filterSemester.value) params.semester_id = filterSemester.value
+  if (authStore.user?.campus && authStore.user.campus !== 'ALL') params.campus = authStore.user.campus
   const { data } = await api.get('/top-scores', { params })
   topScores.value = data
 }
 
 async function loadSemesters() {
-  const { data } = await api.get('/semesters')
+  const params = {}
+  if (authStore.user?.campus && authStore.user.campus !== 'ALL') params.campus = authStore.user.campus
+  const { data } = await api.get('/semesters', { params })
   semesters.value = data
 }
 
 async function loadStudents() {
-  const { data } = await api.get('/students', { params: { limit: 200 } })
+  const params = { limit: 200 }
+  if (authStore.user?.campus && authStore.user.campus !== 'ALL') params.campus = authStore.user.campus
+  const { data } = await api.get('/students', { params })
   allStudents.value = data.students || []
 }
 

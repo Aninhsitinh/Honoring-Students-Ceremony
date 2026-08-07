@@ -5,8 +5,8 @@ const { clearCache } = require('../utils/cache');
 const topScoreController = {
   async getAll(req, res) {
     try {
-      const { semester_id, subject_name } = req.query;
-      const topScores = await TopScore.findAll({ semester_id, subject_name });
+      const { semester_id, subject_name, campus } = req.query;
+      const topScores = await TopScore.findAll({ semester_id, subject_name, campus });
       res.json(topScores);
     } catch (error) {
       console.error('Get top scores error:', error);
