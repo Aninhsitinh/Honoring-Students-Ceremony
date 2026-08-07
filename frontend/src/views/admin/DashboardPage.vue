@@ -48,6 +48,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../../api/axios'
+import { useAuthStore } from '../../stores/auth'
 import icons from '../../utils/icons'
 
 const fileTextIcon = icons.fileText
@@ -64,11 +65,14 @@ const recentPosts = ref([])
 
 onMounted(async () => {
   try {
+    const authStore = useAuthStore()
+    const campusParam = (authStore.user?.campus && authStore.user.campus !== 'ALL') ? authStore.user.campus : undefined
+
     const [studentsRes, semestersRes, postsRes, scoresRes] = await Promise.all([
-      api.get('/students', { params: { limit: 5 } }),
-      api.get('/semesters'),
-      api.get('/posts', { params: { limit: 5 } }),
-      api.get('/top-scores'),
+      api.get('/students', { params: { limit: 5, campus: campusParam } }),
+      api.get('/semesters', { params: { campus: campusParam } }),
+      api.get('/posts', { params: { limit: 5, campus: campusParam } }),
+      api.get('/top-scores', { params: { campus: campusParam } }),
     ])
 
     stats.value[0].value = studentsRes.data.total || 0
