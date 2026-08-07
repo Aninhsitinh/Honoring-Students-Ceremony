@@ -1,6 +1,7 @@
 const Post = require('../models/post.model');
 const slugify = require('slugify');
 const { deleteCloudinaryImage } = require('../utils/cloudinary');
+const { clearCache } = require('../utils/cache');
 
 const postController = {
   async getAll(req, res) {
@@ -75,6 +76,7 @@ const postController = {
         is_published: is_published === 'true' || is_published === true,
         campus
       });
+      clearCache('/api/posts');
       res.status(201).json(post);
     } catch (error) {
       console.error('Create post error:', error);
@@ -121,6 +123,7 @@ const postController = {
       if (!post) {
         return res.status(404).json({ message: 'error.post.not_found' });
       }
+      clearCache('/api/posts');
       res.json(post);
     } catch (error) {
       console.error('Update post error:', error);
@@ -142,6 +145,7 @@ const postController = {
       if (post.thumbnail_url) {
         await deleteCloudinaryImage(post.thumbnail_url);
       }
+      clearCache('/api/posts');
       res.json({ message: 'post.deleted', post });
     } catch (error) {
       console.error('Delete post error:', error);

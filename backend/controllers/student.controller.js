@@ -2,6 +2,7 @@ const Student = require('../models/student.model');
 const TopScore = require('../models/topScore.model');
 const { broadcast } = require('../utils/sse');
 const { deleteCloudinaryImage } = require('../utils/cloudinary');
+const { clearCache } = require('../utils/cache');
 
 const DEPARTMENTS = {
   GC: [
@@ -120,6 +121,8 @@ const studentController = {
         sort_order,
       });
       broadcast('students_updated', { action: 'create', semester_id });
+      clearCache('/api/students');
+      clearCache('/api/top-scores');
       res.status(201).json(student);
     } catch (error) {
       console.error('Create student error:', error);
@@ -161,6 +164,8 @@ const studentController = {
         return res.status(404).json({ message: 'error.student.not_found' });
       }
       broadcast('students_updated', { action: 'update', semester_id });
+      clearCache('/api/students');
+      clearCache('/api/top-scores');
       res.json(student);
     } catch (error) {
       console.error('Update student error:', error);
@@ -220,6 +225,8 @@ const studentController = {
       }
       
       broadcast('students');
+      clearCache('/api/students');
+      clearCache('/api/top-scores');
       res.json({ message: 'Success', imported: successCount });
     } catch (error) {
       console.error('Import error:', error);
@@ -237,6 +244,8 @@ const studentController = {
       }
 
       broadcast('students');
+      clearCache('/api/students');
+      clearCache('/api/top-scores');
       res.json({ message: 'admin.delete_success', student });
     } catch (error) {
       console.error('Delete student error:', error);

@@ -1,6 +1,7 @@
 const Semester = require('../models/semester.model');
 const slugify = require('slugify');
 const { deleteCloudinaryImage } = require('../utils/cloudinary');
+const { clearCache } = require('../utils/cache');
 
 const semesterController = {
   async getAll(req, res) {
@@ -56,6 +57,7 @@ const semesterController = {
       const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
 
       const semester = await Semester.create({ name, year, slug, description, is_active, bg_image, campus });
+      clearCache('/api/semesters');
       res.status(201).json(semester);
     } catch (error) {
       console.error('Create semester error:', error);
@@ -80,6 +82,7 @@ const semesterController = {
       const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : req.body.campus;
 
       const semester = await Semester.update(req.params.id, { name, year, slug, description, is_active, bg_image, campus });
+      clearCache('/api/semesters');
       res.json(semester);
     } catch (error) {
       console.error('Update semester error:', error);
@@ -101,6 +104,7 @@ const semesterController = {
       if (semester.bg_image) {
         await deleteCloudinaryImage(semester.bg_image);
       }
+      clearCache('/api/semesters');
       res.json({ message: 'semester.deleted', semester });
     } catch (error) {
       console.error('Delete semester error:', error);

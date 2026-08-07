@@ -3,11 +3,12 @@ const router = express.Router();
 const postController = require('../controllers/post.controller');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { cacheMiddleware } = require('../utils/cache');
 
 // Public routes
-router.get('/', postController.getAll);
-router.get('/slug/:slug', postController.getBySlug);
-router.get('/:id', postController.getById);
+router.get('/', cacheMiddleware, postController.getAll);
+router.get('/slug/:slug', cacheMiddleware, postController.getBySlug);
+router.get('/:id', cacheMiddleware, postController.getById);
 
 // Admin routes
 router.post('/', auth, upload.single('thumbnail'), postController.create);

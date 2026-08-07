@@ -3,10 +3,11 @@ const router = express.Router();
 const studentController = require('../controllers/student.controller');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { cacheMiddleware } = require('../utils/cache');
 
 // Public routes
-router.get('/', studentController.getAll);
-router.get('/:id', studentController.getById);
+router.get('/', cacheMiddleware, studentController.getAll);
+router.get('/:id', cacheMiddleware, studentController.getById);
 
 // Admin routes
 router.post('/import', auth, studentController.importExcel);
