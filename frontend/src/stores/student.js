@@ -51,5 +51,10 @@ export const useStudentStore = defineStore('student', () => {
     return data
   }
 
-  return { students, total, loading, selectedStudent, fetchStudents, appendStudents, fetchStudent }
+  function clearStudents() {
+    students.value = []
+    total.value = 0
+  }
+
+  return { students, total, loading, selectedStudent, fetchStudents, appendStudents, fetchStudent, clearStudents }
 })

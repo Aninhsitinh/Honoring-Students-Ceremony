@@ -9,7 +9,8 @@
           <span class="gradient-text">{{ $t('home.top_students') }}</span>
         </h2>
         <p class="section-subtitle">
-          {{ $t('home.top_students_desc') }} - {{ selectedSemester?.name }} {{ selectedSemester?.year }}
+          {{ $t('home.top_students_desc') }}
+          <span v-if="selectedSemester">- {{ selectedSemester.name }} {{ selectedSemester.year }}</span>
         </p>
 
         <SearchBar v-model="searchQuery" />
@@ -203,7 +204,12 @@ watch(selectedSemester, (semester) => {
 
 async function loadData() {
   const semId = selectedSemester.value?.id
-  if (!semId) return
+  if (!semId) {
+    topScores.value = []
+    posts.value = []
+    studentStore.clearStudents()
+    return
+  }
 
   const params = { semester_id: semId, limit: studentLimit, offset: 0 }
   if (filterType.value !== 'all') params.achievement_type = filterType.value

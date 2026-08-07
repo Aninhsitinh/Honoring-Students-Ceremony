@@ -123,7 +123,7 @@ const selectedCampusName = computed(() => {
 function selectCampus(code) {
   campusStore.setCampus(code)
   showCampuses.value = false
-  semesterStore.fetchAll() // Refetch semesters for new campus
+  semesterStore.fetchAll(false) // Refetch semesters for new campus, but do not auto-select
 }
 
 const semesters = computed(() => semesterStore.semesters)
