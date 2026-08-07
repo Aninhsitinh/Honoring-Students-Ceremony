@@ -45,16 +45,16 @@ const semesterController = {
   async create(req, res) {
     try {
       const { name, year, description, is_active } = req.body;
-      const slug = slugify(`${name}-${year}`, { lower: true, locale: 'vi' });
+      // If Admin has a specific campus (not ALL), force create for their campus
+      const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
+      
+      const slug = slugify(`${name}-${year}-${campus}`, { lower: true, locale: 'vi' });
       const bg_image = req.file ? req.file.path : null;
 
       const existing = await Semester.findBySlug(slug);
       if (existing) {
         return res.status(400).json({ message: 'error.semester.exists' });
       }
-
-      // If Admin has a specific campus (not ALL), force create for their campus
-      const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
 
       const semester = await Semester.create({ name, year, slug, description, is_active, bg_image, campus });
       clearCache('/api/semesters');
@@ -68,7 +68,8 @@ const semesterController = {
   async update(req, res) {
     try {
       const { name, year, description, is_active } = req.body;
-      const slug = slugify(`${name}-${year}`, { lower: true, locale: 'vi' });
+      const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
+      const slug = slugify(`${name}-${year}-${campus}`, { lower: true, locale: 'vi' });
       const bg_image = req.file ? req.file.path : req.body.bg_image;
 
       const current = await Semester.findById(req.params.id);
@@ -79,7 +80,6 @@ const semesterController = {
         return res.status(403).json({ message: 'error.auth.forbidden' });
       }
 
-      const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : req.body.campus;
 
       const semester = await Semester.update(req.params.id, { name, year, slug, description, is_active, bg_image, campus });
       clearCache('/api/semesters');
