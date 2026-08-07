@@ -37,7 +37,10 @@
     <div class="sidebar-footer">
       <div class="admin-user-info">
         <span class="nav-icon" v-html="userIcon"></span>
-        <span class="user-name">{{ user?.username }}</span>
+        <div style="display: flex; flex-direction: column;">
+          <span class="user-name">{{ user?.username }}</span>
+          <span v-if="user?.campus" class="badge badge-gold" style="font-size: 0.7rem; align-self: flex-start; margin-top: 4px;">{{ user.campus === 'ALL' ? 'Super Admin' : user.campus }}</span>
+        </div>
       </div>
       <button class="btn btn-secondary btn-sm logout-btn" @click="handleLogout">
         {{ $t('nav.logout') }}

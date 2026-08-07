@@ -1,9 +1,10 @@
 const prisma = require('../config/database');
 
 const Post = {
-  async findAll({ semester_id, is_published, limit = 20, offset = 0 }) {
+  async findAll({ semester_id, is_published, campus, limit = 20, offset = 0 }) {
     const where = {};
     if (semester_id) where.semester_id = parseInt(semester_id);
+    if (campus && campus !== 'ALL') where.campus = campus;
     if (is_published !== undefined) {
       // is_published could be a string 'true'/'false' or boolean
       where.is_published = is_published === 'true' || is_published === true;
@@ -31,9 +32,10 @@ const Post = {
     }));
   },
 
-  async count({ semester_id, is_published }) {
+  async count({ semester_id, is_published, campus }) {
     const where = {};
     if (semester_id) where.semester_id = parseInt(semester_id);
+    if (campus && campus !== 'ALL') where.campus = campus;
     if (is_published !== undefined) {
       where.is_published = is_published === 'true' || is_published === true;
     }
@@ -79,7 +81,7 @@ const Post = {
     };
   },
 
-  async create({ title, slug, content, thumbnail_url, author_id, semester_id, is_published }) {
+  async create({ title, slug, content, thumbnail_url, author_id, semester_id, is_published, campus = 'HN' }) {
     const isPub = is_published === 'true' || is_published === true;
     return await prisma.post.create({
       data: {
@@ -90,12 +92,14 @@ const Post = {
         author_id: author_id ? parseInt(author_id) : null,
         semester_id: semester_id ? parseInt(semester_id) : null,
         is_published: isPub,
-        published_at: isPub ? new Date() : null
+        published_at: isPub ? new Date() : null,
+        updated_at: new Date(),
+        campus
       }
     });
   },
 
-  async update(id, { title, slug, content, thumbnail_url, semester_id, is_published }) {
+  async update(id, { title, slug, content, thumbnail_url, semester_id, is_published, campus }) {
     const isPub = is_published === 'true' || is_published === true;
     
     // Fetch existing post to check current published_at state
@@ -118,7 +122,8 @@ const Post = {
         semester_id: semester_id ? parseInt(semester_id) : null,
         is_published: isPub,
         published_at,
-        updated_at: new Date()
+        updated_at: new Date(),
+        campus
       }
     });
   },

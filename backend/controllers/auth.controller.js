@@ -22,7 +22,7 @@ const authController = {
       }
 
       const accessToken = jwt.sign(
-        { id: user.id, username: user.username, role: user.role },
+        { id: user.id, username: user.username, role: user.role, campus: user.campus },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN || '15m' } // Short lived access token
       );
@@ -49,6 +49,7 @@ const authController = {
           username: user.username,
           email: user.email,
           role: user.role,
+          campus: user.campus,
         },
       });
     } catch (error) {
@@ -72,7 +73,7 @@ const authController = {
       }
 
       const accessToken = jwt.sign(
-        { id: user.id, username: user.username, role: user.role },
+        { id: user.id, username: user.username, role: user.role, campus: user.campus },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
       );

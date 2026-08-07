@@ -4,12 +4,12 @@ const { broadcast } = require('../utils/sse');
 const { deleteCloudinaryImage } = require('../utils/cloudinary');
 
 const DEPARTMENTS = {
-  GCS: [
+  GC: [
     'Công nghệ thông tin',
     'Trí tuệ nhân tạo và Khoa học dữ liệu',
     'Trí tuệ nhân tạo và An ninh mạng'
   ],
-  GBS: [
+  GB: [
     'Quản trị Kinh doanh',
     'Quản trị Marketing',
     'Quản trị Sự kiện',
@@ -17,24 +17,34 @@ const DEPARTMENTS = {
     'Kinh doanh quốc tế',
     'Logistics và Quản trị Chuỗi cung ứng'
   ],
-  GDS: [
+  GD: [
     'Thiết kế đồ họa & kỹ thuật số',
     'Truyền thông đa phương tiện'
   ]
 };
 
-function validateStudentCode(code, department) {
+const CAMPUS_SUFFIX = {
+  HN: 'H',
+  DN: 'D',
+  HCM: 'S',
+  CT: 'C'
+};
+
+function validateStudentCode(code, department, campus = 'HN') {
   if (!code || !department) return false;
-  let expectedPrefix = null;
+  let expectedMajorPrefix = null;
   const deptLower = department.toLowerCase().trim();
   
   for (const [prefix, majors] of Object.entries(DEPARTMENTS)) {
     if (majors.some(m => m.toLowerCase().trim() === deptLower)) {
-      expectedPrefix = prefix;
+      expectedMajorPrefix = prefix;
       break;
     }
   }
-  if (!expectedPrefix) return false; // Unknown department
+  if (!expectedMajorPrefix) return false; // Unknown department
+  
+  const campusSuffix = CAMPUS_SUFFIX[campus] || 'H';
+  const expectedPrefix = `${expectedMajorPrefix}${campusSuffix}`;
 
   const regex = new RegExp(`^${expectedPrefix}\\d{6}$`, 'i');
   return regex.test(code.trim());
@@ -79,7 +89,14 @@ const studentController = {
       const { full_name, student_code, department, description, achievement_type, semester_id, sort_order } = req.body;
       let avatar_url = req.body.avatar_url || null;
 
-      if (!validateStudentCode(student_code, department)) {
+      const { PrismaClient } = require('@prisma/client');
+      const prisma = new PrismaClient();
+      const semester = await prisma.semester.findUnique({ where: { id: parseInt(semester_id) } });
+      if (!semester) {
+        return res.status(404).json({ message: 'error.semester.not_found' });
+      }
+
+      if (!validateStudentCode(student_code, department, semester.campus)) {
         return res.status(400).json({ message: 'error.student.invalid_code' });
       }
 
@@ -159,12 +176,21 @@ const studentController = {
       }
 
       let successCount = 0;
+      
+      const { PrismaClient } = require('@prisma/client');
+      const prisma = new PrismaClient();
+      const firstStudent = students[0];
+      const semester = await prisma.semester.findUnique({ where: { id: parseInt(firstStudent.semester_id) } });
+      const campus = semester ? semester.campus : 'HN';
+
       for (const row of students) {
         const { full_name, student_code, department, achievement_type, description, semester_id, subject_name, score } = row;
         if (!full_name || !student_code || !department) continue;
 
-        const codePattern = /^(GCS|GBS|GDS)\d{6}$/;
-        if (!codePattern.test(student_code)) continue;
+        if (!validateStudentCode(student_code, department, campus)) {
+          console.warn(`Invalid code ${student_code} for campus ${campus}`);
+          continue;
+        }
 
         // check if student exists
         let student = await Student.findByCodeAndSemester(student_code, semester_id);

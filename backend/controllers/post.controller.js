@@ -5,15 +5,17 @@ const { deleteCloudinaryImage } = require('../utils/cloudinary');
 const postController = {
   async getAll(req, res) {
     try {
-      const { semester_id, is_published, limit = 20, offset = 0 } = req.query;
+      const { semester_id, is_published, campus, limit = 20, offset = 0 } = req.query;
       const posts = await Post.findAll({
         semester_id,
+        campus,
         is_published: is_published !== undefined ? is_published === 'true' : undefined,
         limit: parseInt(limit),
         offset: parseInt(offset),
       });
       const total = await Post.count({
         semester_id,
+        campus,
         is_published: is_published !== undefined ? is_published === 'true' : undefined,
       });
       res.json({ posts, total, limit: parseInt(limit), offset: parseInt(offset) });
@@ -61,6 +63,8 @@ const postController = {
       const baseSlug = slugify(title, { lower: true, locale: 'vi', strict: true });
       const slug = `${baseSlug}-${Date.now()}`;
 
+      const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : (req.body.campus || 'HN');
+
       const post = await Post.create({
         title,
         slug,
@@ -69,6 +73,7 @@ const postController = {
         author_id: req.user.id,
         semester_id,
         is_published: is_published === 'true' || is_published === true,
+        campus
       });
       res.status(201).json(post);
     } catch (error) {
@@ -93,6 +98,16 @@ const postController = {
 
       const slug = slugify(title, { lower: true, locale: 'vi', strict: true }) + '-' + Date.now();
 
+      const current = await Post.findById(req.params.id);
+      if (!current) {
+        return res.status(404).json({ message: 'error.post.not_found' });
+      }
+      if (req.user && req.user.campus !== 'ALL' && current.campus !== req.user.campus) {
+        return res.status(403).json({ message: 'error.auth.forbidden' });
+      }
+
+      const campus = (req.user && req.user.campus !== 'ALL') ? req.user.campus : req.body.campus;
+
       const post = await Post.update(req.params.id, {
         title,
         slug,
@@ -100,6 +115,7 @@ const postController = {
         thumbnail_url,
         semester_id,
         is_published: is_published === 'true' || is_published === true,
+        campus
       });
 
       if (!post) {
@@ -114,10 +130,15 @@ const postController = {
 
   async delete(req, res) {
     try {
-      const post = await Post.delete(req.params.id);
-      if (!post) {
+      const current = await Post.findById(req.params.id);
+      if (!current) {
         return res.status(404).json({ message: 'error.post.not_found' });
       }
+      if (req.user && req.user.campus !== 'ALL' && current.campus !== req.user.campus) {
+        return res.status(403).json({ message: 'error.auth.forbidden' });
+      }
+
+      const post = await Post.delete(req.params.id);
       if (post.thumbnail_url) {
         await deleteCloudinaryImage(post.thumbnail_url);
       }

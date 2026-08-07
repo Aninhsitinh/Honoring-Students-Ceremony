@@ -18,6 +18,23 @@
           <span class="nav-text">{{ $t('nav.news') }}</span>
         </router-link>
         <div class="nav-link semester-selector">
+          <button class="semester-btn" @click.stop="showCampuses = !showCampuses; showSemesters = false; showGraduation = false">
+            <span class="nav-icon" v-html="icons.mapPin"></span>
+            <span class="nav-text">{{ selectedCampusName }} ▾</span>
+          </button>
+          <div class="semester-dropdown" v-show="showCampuses">
+            <button
+              v-for="cam in campuses"
+              :key="cam.code"
+              class="semester-option"
+              :class="{ active: currentCampus === cam.code }"
+              @click="selectCampus(cam.code)"
+            >
+              {{ cam.name }}
+            </button>
+          </div>
+        </div>
+        <div class="nav-link semester-selector">
           <button class="semester-btn" @click.stop="showSemesters = !showSemesters">
             <span class="nav-icon" v-html="icons.calendar"></span>
             <span class="nav-text">{{ $t('nav.semesters') }} ▾</span>
@@ -68,6 +85,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSemesterStore } from '../../stores/semester'
+import { useCampusStore } from '../../stores/campus'
 import { tSem } from '../../utils/translate'
 import { useDark, useToggle } from '@vueuse/core'
 import icons from '../../utils/icons'
@@ -90,8 +108,23 @@ function toggleLanguage() {
 }
 
 const semesterStore = useSemesterStore()
+const campusStore = useCampusStore()
 const showSemesters = ref(false)
 const showGraduation = ref(false)
+const showCampuses = ref(false)
+
+const campuses = computed(() => campusStore.campuses)
+const currentCampus = computed(() => campusStore.currentCampus)
+const selectedCampusName = computed(() => {
+  const cam = campuses.value.find(c => c.code === currentCampus.value)
+  return cam ? cam.name : 'Campus'
+})
+
+function selectCampus(code) {
+  campusStore.setCampus(code)
+  showCampuses.value = false
+  semesterStore.fetchAll() // Refetch semesters for new campus
+}
 
 const semesters = computed(() => semesterStore.semesters)
 const selectedSemester = computed(() => semesterStore.selectedSemester)
@@ -105,6 +138,7 @@ function closeDropdown(e) {
   if (!e.target.closest('.semester-selector')) {
     showSemesters.value = false
     showGraduation.value = false
+    showCampuses.value = false
   }
 }
 

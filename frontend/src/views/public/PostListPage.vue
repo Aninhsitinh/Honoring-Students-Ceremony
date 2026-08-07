@@ -34,18 +34,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import api from '../../api/axios'
 import PostCard from '../../components/public/PostCard.vue'
 import PostCardSkeleton from '../../components/public/PostCardSkeleton.vue'
+import { useCampusStore } from '../../stores/campus'
+
+const campusStore = useCampusStore()
+const currentCampus = computed(() => campusStore.currentCampus)
 
 const posts = ref([])
 const loading = ref(false)
 
-onMounted(async () => {
+async function fetchPosts() {
   let timeout = setTimeout(() => { loading.value = true }, 200)
   try {
-    const { data } = await api.get('/posts', { params: { is_published: true, limit: 50 } })
+    const { data } = await api.get('/posts', { 
+      params: { 
+        is_published: true, 
+        limit: 50,
+        campus: currentCampus.value
+      } 
+    })
     posts.value = data.posts || []
   } catch (error) {
     console.error('Failed to load posts:', error)
@@ -53,6 +63,12 @@ onMounted(async () => {
     clearTimeout(timeout)
     loading.value = false
   }
+}
+
+watch(currentCampus, fetchPosts)
+
+onMounted(() => {
+  fetchPosts()
 })
 </script>
 
